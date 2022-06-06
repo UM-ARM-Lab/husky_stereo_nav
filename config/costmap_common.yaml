@@ -1,0 +1,26 @@
+footprint: [[-0.5, -0.33], [-0.5, 0.33], [0.5, 0.33], [0.5, -0.33]]
+inflation_radius: 0.3
+
+# robot_base_frame: base_link
+# update_frequency: 4.0
+# publish_frequency: 3.0
+# transform_tolerance: 0.5
+
+# resolution: 0.05
+
+obstacle_range: 5.5
+raytrace_range: 6.0
+
+observation_sources: zed_point_cloud
+
+zed_point_cloud: {sensor_frame: zed2i_base_link, data_type: PointCloud2, topic: /zed2i/zed_node/point_cloud/cloud_registered, marking: true, clearing: true}
+# static:
+#     map_topic: /map
+#     subscribe_to_updates: true
+
+# obstacles_laser:
+#     observation_sources: laser
+#     laser: {data_type: LaserScan, clearing: true, marking: true, topic: scan, inf_is_valid: true}
+
+# inflation:
+#     inflation_radius: 1.0
