@@ -1,117 +1,136 @@
+
 <launch>
 
-    <!-- ZED topic args -->
-    <arg name="left_image" value="/zed2i/zed_node/left/image_rect_color" />
-    <arg name="right_image" value="/zed2i/zed_node/right/image_rect_color" />
-    <arg name="left_camera_info" value="/zed2i/zed_node/left/camera_info" />
-    <arg name="right_camera_info" value="/zed2i/zed_node/right/camera_info" />
-    <arg name="rgb_image" value="/zed2i/zed_node/rgb/image_rect_color" />
+	<!-- ZED topic args -->
+	<arg name="left_image" value="/zed2i/zed_node/left/image_rect_color" />
+	<arg name="right_image" value="/zed2i/zed_node/right/image_rect_color" />
+	<arg name="left_camera_info" value="/zed2i/zed_node/left/camera_info" />
+	<arg name="right_camera_info" value="/zed2i/zed_node/right/camera_info" />
+	<arg name="rgb_image" value="/zed2i/zed_node/rgb/image_rect_color" />
+        
+    <arg name="camera_name"           default="zed2i" /> <!-- The name you want -->
+    <arg name="camera_model"          default="zed2i" /> <!-- 'zed' or 'zedm' or 'zed2' -->
+    <arg name="node_name"             default="zed_node" />
 
-    <arg name="camera_name" default="zed2i" /> <!-- The name you want -->
-    <arg name="camera_model" default="zed2i" /> <!-- 'zed' or 'zedm' or 'zed2' -->
-    <arg name="node_name" default="zed_node" />
+    <!-- Load SVO file -->
+    <arg name="svo_file"              default="" /><!-- <arg name="svo_file" default="path/to/svo/file.svo"> -->
+    <!-- Remote stream -->
+    <arg name="stream"                default="" /> <!-- <arg name="stream" default="<ip_address>:<port>"> -->
 
     <!-- Base frame -->
-    <arg name="base_frame" default="base_link" />
+    <arg name="base_frame"            default="base_link" />
 
     <!-- Publish ZED urdf -->
-    <arg name="publish_urdf" default="true" />
+    <arg name="publish_urdf"          default="true" />
 
-    <arg name="camera_id" default="0" />
-    <arg name="gpu_id" default="-1" />
+    <arg name="camera_id"             default="0" />
+    <arg name="gpu_id"                default="-1" />
 
     <!-- Position respect to base frame (i.e. "base_link) -->
-    <arg name="cam_pos_x" default="0.0" />
-    <arg name="cam_pos_y" default="0.0" />
-    <arg name="cam_pos_z" default="0.0" />
+    <arg name="cam_pos_x"             default="0.0" />
+    <arg name="cam_pos_y"             default="0.0" />
+    <arg name="cam_pos_z"             default="0.0" />
 
     <!-- Orientation respect to base frame (i.e. "base_link) -->
-    <arg name="cam_roll" default="0.0" />
-    <arg name="cam_pitch" default="0.0" />
-    <arg name="cam_yaw" default="0.0" />
+    <arg name="cam_roll"              default="0.0" />
+    <arg name="cam_pitch"             default="0.0" />
+    <arg name="cam_yaw"               default="0.0" />
+	
 
-
-    <!-- ZED stereo camera + odom -->
+	<!-- ZED stereo camera + odom -->
     <!-- <include file="$(find zed_wrapper)/launch/zed2i.launch">
         <arg name="camera_model"        value="zed2i" />
     </include> -->
 
     <group ns="zed2i">
-        <node name="zed_node" pkg="zed_wrapper" type="zed_wrapper_node" output="screen" required="true">
+        <node pkg="tf" type="static_transform_publisher" name="zed_mount_link"
+	    args="0.4 0 0.8 0 0 0 base_link zed_mount_link 100" />
+        <node name="zed_node" pkg="zed_wrapper" type="zed_wrapper_node" output="screen" required="true"><!-- launch-prefix="valgrind" -->
             <rosparam file="$(find zed_wrapper)/params/common.yaml" command="load" />
             <rosparam file="$(find zed_wrapper)/params/zed2i.yaml" command="load" />
+
             <!-- Camera name -->
-            <param name="general/camera_name" value="zed2i" />
+            <param name="general/camera_name"               value="zed2i" />
+
             <!-- Base frame -->
-            <param name="general/base_frame" value="base_link" />
+            <param name="general/base_frame"                value="zed_mount_link" />
+
             <!-- Camera ID -->
-            <param name="general/zed_id" value="0" />
+            <param name="general/zed_id"                    value="0" />
+
             <!-- GPU ID -->
-            <param name="general/gpu_id" value="-1" />
+            <param name="general/gpu_id"                    value="-1" />
+
             <!-- Disable TF publishing -->
-            <param name="pos_tracking/publish_tf" value="false" />
-            <param name="pos_tracking/publish_map_tf" value="false" />
+            <param name="pos_tracking/publish_tf"            value="false" />
+            <param name="pos_tracking/publish_map_tf"        value="false" />
         </node>
     </group>
+
     <group>
-        <param name="$(arg camera_name)_description" command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
-                                camera_name:=$(arg camera_name)
-                                camera_model:=$(arg camera_model)
-                                base_frame:=$(arg base_frame)
-                                cam_pos_x:=$(arg cam_pos_x)
-                                cam_pos_y:=$(arg cam_pos_y)
-                                cam_pos_z:=$(arg cam_pos_z)
-                                cam_roll:=$(arg cam_roll)
-                                cam_pitch:=$(arg cam_pitch)
-                                cam_yaw:=$(arg cam_yaw)" />
+        <param name="$(arg camera_name)_description"
+               command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
+                        camera_name:=$(arg camera_name)
+                        camera_model:=$(arg camera_model)
+                        base_frame:=$(arg base_frame)
+                        cam_pos_x:=$(arg cam_pos_x)
+                        cam_pos_y:=$(arg cam_pos_y)
+                        cam_pos_z:=$(arg cam_pos_z)
+                        cam_roll:=$(arg cam_roll)
+                        cam_pitch:=$(arg cam_pitch)
+                        cam_yaw:=$(arg cam_yaw)"
+        />
+
         <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
             <remap from="robot_description" to="$(arg camera_name)_description" />
         </node>
     </group>
 
-    <!-- Visual Odometry -->
-    <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen">
-        <remap from="left/image_rect" to="$(arg left_image)" />
-        <remap from="right/image_rect" to="$(arg right_image)" />
-        <remap from="left/camera_info" to="$(arg left_camera_info)" />
-        <remap from="right/camera_info" to="$(arg right_camera_info)" />
-        <remap from="odom" to="/odometry" />
+	<!-- Visual Odometry -->
+	<node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen">
+      <remap from="left/image_rect"       to="$(arg left_image)"/>
+      <remap from="right/image_rect"      to="$(arg right_image)"/>
+      <remap from="left/camera_info"      to="$(arg left_camera_info)"/>
+      <remap from="right/camera_info"     to="$(arg right_camera_info)"/>
+      <remap from="odom"                  to="/odometry"/>
 
-        <param name="frame_id" type="string" value="base_link" />
-        <param name="odom_frame_id" type="string" value="odom" />
+      <param name="frame_id" type="string" value="base_link"/>
+      <param name="odom_frame_id" type="string" value="odom"/>
 
-        <param name="Odom/InlierDistance" type="string" value="0.1" />
-        <param name="Odom/MinInliers" type="string" value="10" />
-        <param name="Odom/RoiRatios" type="string" value="0.03 0.03 0.04 0.04" />
-        <param name="Odom/MaxDepth" type="string" value="10" />
+      <param name="Odom/InlierDistance" type="string" value="0.1"/>
+      <param name="Odom/MinInliers" type="string" value="10"/>
+      <param name="Odom/RoiRatios" type="string" value="0.03 0.03 0.04 0.04"/>
+      <param name="Odom/MaxDepth" type="string" value="10"/>
+      
+      <param name="GFTT/MaxCorners" type="string" value="500"/>
+      <param name="GFTT/MinDistance" type="string" value="5"/>
+      <param name="publish_tf"  type="bool"   value="true"/>
+	</node>
 
-        <param name="GFTT/MaxCorners" type="string" value="500" />
-        <param name="GFTT/MinDistance" type="string" value="5" />
-        <param name="publish_tf" type="bool" value="true" />
-    </node>
+  <group ns="rtabmap">   
+      <!-- Visual Localization using pre recorded 3D map -->
+      <!-- delete_db_on_start -->
+      <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args=""> 
+         <param name="frame_id" type="string" value="base_link"/>
+         <param name="subscribe_stereo" type="bool" value="true"/>
+         <param name="subscribe_depth" type="bool" value="false"/>
 
-    <group ns="rtabmap">
-        <!-- Visual Localization using pre recorded 3D map -->
-        <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="">
-            <param name="frame_id" type="string" value="base_link" />
-            <param name="subscribe_stereo" type="bool" value="true" />
-            <param name="subscribe_depth" type="bool" value="false" />
+         <remap from="left/image_rect" to="$(arg left_image)"/>
+         <remap from="right/image_rect" to="$(arg right_image)"/>
+         <remap from="left/camera_info" to="$(arg left_camera_info)"/>
+         <remap from="right/camera_info" to="$(arg right_camera_info)"/>
 
-            <remap from="left/image_rect" to="$(arg left_image)" />
-            <remap from="right/image_rect" to="$(arg right_image)" />
-            <remap from="left/camera_info" to="$(arg left_camera_info)" />
-            <remap from="right/camera_info" to="$(arg right_camera_info)" />
+         <remap from="odom" to="/odometry"/>
 
-            <remap from="odom" to="/odometry" />
+         <param name="queue_size" type="int" value="30"/>
 
-            <param name="queue_size" type="int" value="30" />
-
-            <!-- RTAB-Map's parameters -->
-            <param name="Mem/IncrementalMemory" type="string" value="false" />
-            <param name="Rtabmap/TimeThr" type="string" value="700" />
-            <param name="Rtabmap/DetectionRate" type="string" value="1" />
-
-            <!-- <param name="Kp/WordsPerImage" type="string" value="200"/>
+         <!-- RTAB-Map's parameters -->
+         <param name="Mem/IncrementalMemory" type="string" value="false"/>
+         <param name="Rtabmap/TimeThr" type="string" value="700"/>
+         <param name="Rtabmap/DetectionRate" type="string" value="1"/>
+         <param name="publish_tf"  type="bool"   value="true"/>
+         
+         <!-- <param name="Kp/WordsPerImage" type="string" value="200"/>
          <param name="Kp/RoiRatios" type="string" value="0.03 0.03 0.04 0.04"/>
 
          <param name="SURF/HessianThreshold" type="string" value="1000"/>
@@ -122,33 +141,34 @@
 
          <param name="LccReextract/Activated" type="string" value="true"/>
          <param name="LccReextract/MaxWords" type="string" value="500"/> -->
-        </node>
-    </group>
+      </node>
+   </group>
 
     <!-- run the map server to serve the static map -->
-    <!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find rtabmap_ros)/launch/husky_nav/map.yaml" /> -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find rtabmap_ros)/launch/husky_nav/map.yaml" />
 
 
-    <!-- ROS navigation stack move_base -->
+	<!-- ROS navigation stack move_base -->
     <!-- <group ns="planner"> -->
-    <remap from="openni_points" to="/zed2i/zed_node/point_cloud/cloud_registered" />
-    <!-- <remap from="base_scan" to="/base_scan"/> -->
-    <remap from="map" to="/rtabmap/grid_map" />
-    <!-- <remap from="move_base_simple/goal" to="/planner_goal"/> -->
-
-    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_local.yaml" command="load" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_global.yaml" command="load" />
-        <rosparam file="$(find husky-stereo-nav)/config/base_local_planner_params.yaml" command="load" />
-    </node>
-
-    <!-- <param name="cmd_vel/abtr_priority" value="10"/> -->
+        <remap from="openni_points" to="/zed2i/zed_node/point_cloud/cloud_registered"/>
+        <!-- <remap from="base_scan" to="/base_scan"/> -->
+        <!-- <remap from="map" to="/rtabmap/grid_map"/> -->
+        <remap from="map" to="/map"/>
+        <!-- <remap from="move_base_simple/goal" to="/planner_goal"/> -->
+        
+        <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    	  <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="global_costmap" />
+     	  <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="local_costmap" />
+    	  <rosparam file="$(find husky-stereo-nav)/config/costmap_local.yaml" command="load" />
+    	  <rosparam file="$(find husky-stereo-nav)/config/costmap_global.yaml" command="load" />
+    	  <rosparam file="$(find husky-stereo-nav)/config/base_local_planner_params.yaml" command="load" />
+   		</node>
+   		
+        <!-- <param name="cmd_vel/abtr_priority" value="10"/> -->
     <!-- </group> -->
 
 
-    <!-- Arbitration between teleop and planner
+	<!-- Arbitration between teleop and planner
     <node name="register_cmd_eta" pkg="abtr_priority" type="register"
         args="/cmd_eta /teleop/cmd_eta"/>
     <node name="register_cmd_vel" pkg="abtr_priority" type="register"
@@ -157,8 +177,8 @@ I would assume that for this simple setup the performance of the arm-system and 
   
 	<node pkg="tf" type="static_transform_publisher" name="base_to_zed_base_link"
 	    args="0 0 0 0 0 0 base_link zed_base_link 100" />  -->
-
-
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find husky-stereo-nav)/rviz/zed_outdoor_nav.rviz" />
-
+	    
+	
+   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find rtabmap_ros)/launch/husky_nav/zed_outdoor_nav.rviz"/>
+  
 </launch>
