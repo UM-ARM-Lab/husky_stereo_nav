@@ -72,7 +72,7 @@
                command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
                         camera_name:=$(arg camera_name)
                         camera_model:=$(arg camera_model)
-                        base_frame:=$(arg base_frame)
+                        base_frame:=zed_mount_link
                         cam_pos_x:=$(arg cam_pos_x)
                         cam_pos_y:=$(arg cam_pos_y)
                         cam_pos_z:=$(arg cam_pos_z)
@@ -105,11 +105,12 @@
       <param name="GFTT/MaxCorners" type="string" value="500"/>
       <param name="GFTT/MinDistance" type="string" value="5"/>
       <param name="publish_tf"  type="bool"   value="true"/>
+      <!-- <param name= "Grid/MaxObstacleHeight" type="string" value="0.5"/> -->
 	</node>
 
   <group ns="rtabmap">   
       <!-- Visual Localization using pre recorded 3D map -->
-      <!-- delete_db_on_start -->
+      <!--delete_db_on_start-->
       <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args=""> 
          <param name="frame_id" type="string" value="base_link"/>
          <param name="subscribe_stereo" type="bool" value="true"/>
@@ -129,7 +130,9 @@
          <param name="Rtabmap/TimeThr" type="string" value="700"/>
          <param name="Rtabmap/DetectionRate" type="string" value="1"/>
          <param name="publish_tf"  type="bool"   value="true"/>
-         
+        <param name= "Grid/MaxObstacleHeight" type="string" value="0.1"/>
+         <param name= "Grid/NoiseFilteringRadius" type="string" value="0.4"/>
+         <param name= "Grid/NoiseFilteringMinNeighbors" type="string" value="10"/>
          <!-- <param name="Kp/WordsPerImage" type="string" value="200"/>
          <param name="Kp/RoiRatios" type="string" value="0.03 0.03 0.04 0.04"/>
 
@@ -142,10 +145,15 @@
          <param name="LccReextract/Activated" type="string" value="true"/>
          <param name="LccReextract/MaxWords" type="string" value="500"/> -->
       </node>
+        <!-- <remap from="cloud_noise_filtering_radius" to="Grid/NoiseFilteringRadius"/> -->
+        <!-- <param name= "Grid/NoiseFilteringRadius" type="string" value="0.1"/> -->
+        <!-- <remap from="cloud_noise_filtering_min_neighbors" to="Grid/NoiseFilteringMinNeighbors"/> -->
+        <!-- <param name= "Grid/NoiseFilteringMinNeighbors" type="string" value="100000"/> -->
+        <!-- <param name= "Grid/MaxObstacleHeight" type="string" value="0.5"/> -->
    </group>
 
     <!-- run the map server to serve the static map -->
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find rtabmap_ros)/launch/husky_nav/map.yaml" />
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find husky-stereo-nav)/maps/lab_filtered1.yaml" />
 
 
 	<!-- ROS navigation stack move_base -->
@@ -157,11 +165,12 @@
         <!-- <remap from="move_base_simple/goal" to="/planner_goal"/> -->
         
         <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    	  <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="global_costmap" />
+          <!-- <remap from="map" to="/rtabmap/grid_map"/> -->
+          <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="global_costmap" />
      	  <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="local_costmap" />
     	  <rosparam file="$(find husky-stereo-nav)/config/costmap_local.yaml" command="load" />
     	  <rosparam file="$(find husky-stereo-nav)/config/costmap_global.yaml" command="load" />
-    	  <rosparam file="$(find husky-stereo-nav)/config/base_local_planner_params.yaml" command="load" />
+    	  <rosparam file="$(find husky-stereo-nav)/config/trajectory_planner.yaml" command="load" />
    		</node>
    		
         <!-- <param name="cmd_vel/abtr_priority" value="10"/> -->
