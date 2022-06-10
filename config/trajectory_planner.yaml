@@ -25,11 +25,11 @@ TrajectoryPlannerROS:
   # vtheta_samples: 20
   # controller_frequency: 20.0
 
-  pdist_scale: 0.6
-  gdist_scale: 0.4
-  occdist_scale: 0.01
-  heading_lookahead: 0.325
-  heading_scoring: false
-  dwa: false
-  publish_cost_grid_pc: true
+  # pdist_scale: 0.6
+  # gdist_scale: 0.4
+  # occdist_scale: 0.01
+  # heading_lookahead: 0.325
+  # heading_scoring: false
+  # dwa: false
+  # publish_cost_grid_pc: true
   

@@ -130,7 +130,7 @@
          <param name="Rtabmap/TimeThr" type="string" value="700"/>
          <param name="Rtabmap/DetectionRate" type="string" value="1"/>
          <param name="publish_tf"  type="bool"   value="true"/>
-        <param name= "Grid/MaxObstacleHeight" type="string" value="0.1"/>
+        <param name= "Grid/MaxObstacleHeight" type="string" value="1"/>
          <param name= "Grid/NoiseFilteringRadius" type="string" value="0.4"/>
          <param name= "Grid/NoiseFilteringMinNeighbors" type="string" value="10"/>
          <!-- <param name="Kp/WordsPerImage" type="string" value="200"/>
