@@ -6,25 +6,9 @@
     <arg name="left_camera_info" value="/zed2i/zed_node/left/camera_info" />
     <arg name="right_camera_info" value="/zed2i/zed_node/right/camera_info" />
 
-    <!-- TODO: I dont think this actually gets used, 
-        try getting rid of it and test if it still works -->
-    <arg name="rgb_image" value="/zed2i/zed_node/rgb/image_rect_color" />
-
-    <!-- TODO: maybe get rid of these since they are ZED specific? -->
-    <arg name="camera_name" default="zed2i" />
-    <arg name="camera_model" default="zed2i" />
-    <arg name="node_name" default="zed_node" />
     <arg name="zed_frame" default="zed_mount_link" />
-    <arg name="camera_id" default="0" />
-    <arg name="gpu_id" default="-1" />
-
-    <!-- path to RTAB-Map database file -->
     <arg name="rtabmap_database_path" default="~/.ros/rtabmap.db" />
-
-    <!-- path to static 2D map -->
     <arg name="static_map_path" default="$(find husky-stereo-nav)/maps/lab_filtered1.yaml" />
-
-    <!-- path to RViz config file -->
     <arg name="rviz_config_path" default="(find rtabmap_ros)/launch/husky_nav/zed_outdoor_nav.rviz" />
 
     <group ns="zed2i">
@@ -33,10 +17,10 @@
             <rosparam file="$(find zed_wrapper)/params/common.yaml" command="load" />
             <rosparam file="$(find zed_wrapper)/params/zed2i.yaml" command="load" />
 
-            <param name="general/camera_name" value="$(arg camera_name)" />
+            <param name="general/camera_name" value="zed2i" />
             <param name="general/base_frame" value="$(arg zed_frame)" />
-            <param name="general/zed_id" value="$(arg camera_id)" />
-            <param name="general/gpu_id" value="$(arg gpu_id)" />
+            <param name="general/zed_id" value="0" />
+            <param name="general/gpu_id" value="-1" />
 
             <!-- Disable publishing of ZED odometry TFs-->
             <param name="pos_tracking/publish_tf" value="false" />
@@ -47,21 +31,15 @@
         <node pkg="tf" type="static_transform_publisher" name="zed_mount_link_publisher" args="0.4 0 0.8 0 0 0 base_link zed_mount_link 100" />
 
         <!-- load ZED URDF -->
-        <param name="$(arg camera_name)_description" command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
-                        camera_name:=$(arg camera_name)
-                        camera_model:=$(arg camera_model)
+        <param name="zed2i_description" command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
+                        camera_name:=zed2i
+                        camera_model:=zed2i
                         base_frame:=$(arg zed_frame)" />
 
         <!-- ZED URDF publisher -->
-        <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
-            <remap from="robot_description" to="$(arg camera_name)_description" />
+        <node name="zed2i_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
+            <remap from="robot_description" to="zed2i_description" />
         </node>
-
-        <!-- ZED stereo camera + odom -->
-        <!-- <include file="$(find zed_wrapper)/launch/zed2i.launch">
-            <arg name="camera_model"        value="zed2i" />
-        </include> -->
-
     </group>
 
 
@@ -72,8 +50,6 @@
         <remap from="left/camera_info" to="$(arg left_camera_info)" />
         <remap from="right/camera_info" to="$(arg right_camera_info)" />
         <remap from="odom" to="/odometry" />
-
-        <!-- TODO: this should probably be the zed frame right? -->
         <param name="frame_id" type="string" value="base_link" />
 
         <!-- TODO: find out what this means -->
@@ -87,7 +63,6 @@
         <param name="GFTT/MaxCorners" type="string" value="500" />
         <param name="GFTT/MinDistance" type="string" value="5" />
         <param name="publish_tf" type="bool" value="true" />
-        <!-- <param name= "Grid/MaxObstacleHeight" type="string" value="0.5"/> -->
     </node>
 
     <group ns="rtabmap">
@@ -95,7 +70,6 @@
         <!--delete_db_on_start-->
         <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="database_path:=$(arg rtabmap_database_path)">
 
-            <!-- TODO: this also might be wrong -->
             <param name="frame_id" type="string" value="base_link" />
             <param name="subscribe_stereo" type="bool" value="true" />
 
@@ -106,10 +80,8 @@
             <remap from="right/image_rect" to="$(arg right_image)" />
             <remap from="left/camera_info" to="$(arg left_camera_info)" />
             <remap from="right/camera_info" to="$(arg right_camera_info)" />
-
             <remap from="odom" to="/odometry" />
 
-            <!-- TODO: why is this here? lookup documentation about this -->
             <param name="queue_size" type="int" value="30" />
 
             <!-- RTAB-Map parameters -->
@@ -138,7 +110,6 @@
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
         <remap from="openni_points" to="/zed2i/zed_node/point_cloud/cloud_registered" />
         <!-- <remap from="map" to="/rtabmap/grid_map"/> -->
-        <remap from="map" to="/map" />
 
         <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="global_costmap" />
         <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="local_costmap" />
