@@ -68,7 +68,8 @@
     <group ns="rtabmap">
         <!-- Visual Localization using pre recorded 3D map -->
         <!--delete_db_on_start-->
-        <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="database_path:=$(arg rtabmap_database_path)">
+        <!-- database_path:=$(arg rtabmap_database_path) -->
+        <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="">
 
             <param name="frame_id" type="string" value="base_link" />
             <param name="subscribe_stereo" type="bool" value="true" />
