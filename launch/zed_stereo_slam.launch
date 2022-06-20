@@ -67,7 +67,6 @@
 
     <group ns="rtabmap">
         <!-- Visual Localization using pre recorded 3D map -->
-        <!--delete_db_on_start-->
         <!-- database_path:=$(arg rtabmap_database_path) -->
         <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="--delete_db_on_start">
 
@@ -103,21 +102,6 @@
             <param name="LccReextract/MaxWords" type="string" value="500"/> -->
         </node>
     </group>
-
-    <!-- map server to serve static map -->
-    <node name="map_server" pkg="map_server" type="map_server" args="$(arg static_map_path)" />
-
-    <!-- ROS navigation stack move_base -->
-    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-        <remap from="openni_points" to="/zed2i/zed_node/point_cloud/cloud_registered" />
-        <!-- <remap from="map" to="/rtabmap/grid_map"/> -->
-
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_local.yaml" command="load" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_global.yaml" command="load" />
-        <rosparam file="$(find husky-stereo-nav)/config/trajectory_planner.yaml" command="load" />
-    </node>
 
     <!-- launch custom RViz config -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_config_path)" />
