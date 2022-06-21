@@ -8,14 +8,14 @@
 
     <arg name="zed_frame" default="zed_mount_link" />
     <arg name="rtabmap_database_path" default="~/.ros/rtabmap.db" />
-    <arg name="static_map_path" default="$(find husky-stereo-nav)/maps/lab_filtered1.yaml" />
+    <arg name="static_map_path" default="$(find husky-stereo-nav)/maps/lab_filtered2.yaml" />
     <arg name="rviz_config_path" default="$(find husky-stereo-nav)/rviz/zed_outdoor_nav.rviz" />
 
     <group ns="zed2i">
         <!-- ZED wrapper node -->
         <node name="zed_node" pkg="zed_wrapper" type="zed_wrapper_node" output="screen" required="true">
-            <rosparam file="$(find zed_wrapper)/params/common.yaml" command="load" />
-            <rosparam file="$(find zed_wrapper)/params/zed2i.yaml" command="load" />
+            <rosparam file="$(find husky-stereo-nav)/config/zed/common.yaml" command="load" />
+            <rosparam file="$(find husky-stereo-nav)/config/zed/zed2i.yaml" command="load" />
 
             <param name="general/camera_name" value="zed2i" />
             <param name="general/base_frame" value="$(arg zed_frame)" />
@@ -112,11 +112,11 @@
         <remap from="openni_points" to="/zed2i/zed_node/point_cloud/cloud_registered" />
         <!-- <remap from="map" to="/rtabmap/grid_map"/> -->
 
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_local.yaml" command="load" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_global.yaml" command="load" />
-        <rosparam file="$(find husky-stereo-nav)/config/trajectory_planner.yaml" command="load" />
+        <rosparam file="$(find husky-stereo-nav)/config/navigation/costmap_common.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find husky-stereo-nav)/config/navigation/costmap_common.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find husky-stereo-nav)/config/navigation/costmap_local.yaml" command="load" />
+        <rosparam file="$(find husky-stereo-nav)/config/navigation/costmap_global.yaml" command="load" />
+        <rosparam file="$(find husky-stereo-nav)/config/navigation/trajectory_planner.yaml" command="load" />
     </node>
 
     <!-- launch custom RViz config -->

@@ -8,7 +8,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 # send the given waypoint to the move_base action server as a goal
 def send_waypoint(client: SimpleActionClient, goal_pose: Pose):
     goal = MoveBaseGoal()
-    goal.target_pose.header.frame_id = "base_link"
+    goal.target_pose.header.frame_id = "map"
     goal.target_pose.header.stamp = rospy.Time.now()
     goal.target_pose.pose = goal_pose
 
@@ -16,6 +16,7 @@ def send_waypoint(client: SimpleActionClient, goal_pose: Pose):
     client.send_goal(goal)
     client.wait_for_result()
     rospy.loginfo(f"goal ended with state: {client.get_state()}")
+    input("press enter to continue to next waypoint")
 
 
 # convert a json like dictionary containing pose data into a ROS Pose message
@@ -42,7 +43,8 @@ def main():
         rospy.loginfo("waiting for move_base action server to start")
 
     # read waypoints from json file
-    with open("waypoints.json", "r") as f:
+    # TODO: dont hardcode path
+    with open("/home/armlab/catkin_ws/src/husky-stereo-nav/src/lab-waypoints.json", "r") as f:
         waypoint_dict = json.load(f)
         waypoints = [dict_to_pose(w) for w in waypoint_dict]
 
