@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import json
 import rospy
+from sys import argv
 from actionlib import SimpleActionClient
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Pose, Point, Quaternion
@@ -15,6 +16,8 @@ def send_waypoint(client: SimpleActionClient, goal_pose: Pose):
     rospy.loginfo("sending goal")
     client.send_goal(goal)
     client.wait_for_result()
+
+    # TODO: make this human readable
     rospy.loginfo(f"goal ended with state: {client.get_state()}")
     input("press enter to continue to next waypoint")
 
@@ -42,9 +45,13 @@ def main():
     while not client.wait_for_server(rospy.Duration(5.0)):
         rospy.loginfo("waiting for move_base action server to start")
 
-    # read waypoints from json file
-    # TODO: dont hardcode path
-    with open("/home/armlab/catkin_ws/src/husky-stereo-nav/src/lab-waypoints.json", "r") as f:
+    # read waypoints from a JSON file, given as a ROS parameter
+    try:
+        json_file_path = rospy.get_param("waypoint_sequence_path")
+    except KeyError:
+        rospy.logerr("No JSON file provided, parameter waypoint_sequence_path needs to be set")
+
+    with open(json_file_path, "r") as f:
         waypoint_dict = json.load(f)
         waypoints = [dict_to_pose(w) for w in waypoint_dict]
 
@@ -52,6 +59,7 @@ def main():
     for w in waypoints:
         send_waypoint(client, w)
 
+    rospy.loginfo("All waypoints complete!")
 
 
 if __name__ == "__main__":
