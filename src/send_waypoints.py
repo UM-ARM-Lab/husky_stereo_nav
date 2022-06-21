@@ -14,6 +14,8 @@ def send_waypoint(client: SimpleActionClient, goal_pose: Pose):
 
     rospy.loginfo("sending goal")
     client.send_goal(goal)
+    client.wait_for_result()
+    rospy.loginfo(f"goal ended with state: {client.get_state()}")
 
 
 # convert a json like dictionary containing pose data into a ROS Pose message
@@ -48,8 +50,6 @@ def main():
     for w in waypoints:
         send_waypoint(client, w)
 
-    client.wait_for_result()
-    print(client.get_state())
 
 
 if __name__ == "__main__":
