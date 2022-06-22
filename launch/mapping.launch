@@ -9,7 +9,7 @@
     <arg name="zed_frame" default="zed_mount_link" />
     <arg name="rtabmap_database_path" default="~/.ros/rtabmap.db" />
     <arg name="static_map_path" default="$(find husky-stereo-nav)/maps/lab_filtered1.yaml" />
-    <arg name="rviz_config_path" default="$(find husky-stereo-nav)/rviz/zed_outdoor_nav.rviz" />
+    <arg name="rviz_config_path" default="$(find husky-stereo-nav)/rviz/mapping.rviz" />
 
     <group ns="zed2i">
         <!-- ZED wrapper node -->
