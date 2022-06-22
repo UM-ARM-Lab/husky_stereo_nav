@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /TF1/Frames1
+        - /RTAB-Map1
       Splitter Ratio: 0.8011152148246765
     Tree Height: 661
   - Class: rviz/Selection
@@ -325,79 +326,6 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 25; 255; 0
-          Enabled: true
-          Head Diameter: 0.30000001192092896
-          Head Length: 0.20000000298023224
-          Length: 0.30000001192092896
-          Line Style: Lines
-          Line Width: 0.029999999329447746
-          Name: Global Path
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Queue Size: 10
-          Radius: 0.029999999329447746
-          Shaft Diameter: 0.10000000149011612
-          Shaft Length: 0.10000000149011612
-          Topic: /move_base/NavfnROS/plan
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Axes Length: 1
-          Axes Radius: 0.10000000149011612
-          Class: rviz/Pose
-          Color: 255; 25; 0
-          Enabled: true
-          Head Length: 0.30000001192092896
-          Head Radius: 0.10000000149011612
-          Name: Current Goal
-          Queue Size: 10
-          Shaft Length: 1
-          Shaft Radius: 0.05000000074505806
-          Shape: Arrow
-          Topic: /move_base/current_goal
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Class: rviz/Polygon
-          Color: 25; 255; 0
-          Enabled: true
-          Name: Footprint
-          Queue Size: 10
-          Topic: /move_base/local_costmap/footprint
-          Unreliable: false
-          Value: true
-        - Alpha: 0.699999988079071
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: false
-          Enabled: true
-          Name: Local Map
-          Topic: /move_base/local_costmap/costmap
-          Unreliable: false
-          Use Timestamp: false
-          Value: true
-        - Alpha: 0.699999988079071
-          Class: rviz/Map
-          Color Scheme: map
-          Draw Behind: false
-          Enabled: true
-          Name: Global Map
-          Topic: /move_base/global_costmap/costmap
-          Unreliable: false
-          Use Timestamp: false
-          Value: true
-      Enabled: true
-      Name: Navigation
-    - Class: rviz/Group
-      Displays:
-        - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
             Max Value: 10
@@ -419,7 +347,7 @@ Visualization Manager:
           Selectable: true
           Size (Pixels): 3
           Size (m): 0.029999999329447746
-          Style: Flat Squares
+          Style: Points
           Topic: /rtabmap/cloud_map
           Unreliable: false
           Use Fixed Frame: true
@@ -455,7 +383,7 @@ Visualization Manager:
           Node filtering radius (m): 0
           Position Transformer: XYZ
           Queue Size: 10
-          Size (Pixels): 5
+          Size (Pixels): 4
           Size (m): 0.009999999776482582
           Style: Points
           Topic: /rtabmap/mapData
@@ -463,7 +391,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: false
-      Enabled: false
+      Enabled: true
       Name: RTAB-Map
     - Class: rviz/Image
       Enabled: true
@@ -505,7 +433,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rtabmap_ros/OrbitOriented
-      Distance: 14.315896987915039
+      Distance: 9.9265718460083
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -521,9 +449,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9697973728179932
+      Pitch: 0.8297973871231079
       Target Frame: <Fixed Frame>
-      Yaw: 3.150845527648926
+      Yaw: 2.7758431434631348
     Saved: ~
 Window Geometry:
   Displays:
