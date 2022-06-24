@@ -32,7 +32,7 @@
     <arg name="cam_yaw" default="0.0" />
 
     <!-- Load robot description -->
-    <param name="robot_description" command="$(find xacro)/xacro '$(find husky-stereo-nav)/urdf/husky.urdf.xacro' robot_namespace:=$(arg robot_namespace)" />
+    <param name="robot_description" command="$(find xacro)/xacro '$(find husky_stereo_nav)/urdf/husky.urdf.xacro' robot_namespace:=$(arg robot_namespace)" />
 
     <arg name="world_name" default="worlds/empty.world" />
 
@@ -45,7 +45,7 @@
         <arg name="debug" value="false" />
     </include>
 
-    <include file="$(find husky-stereo-nav)/launch/control.launch"></include>
+    <include file="$(find husky_stereo_nav)/launch/control.launch"></include>
 
     <arg name="x" default="0.0" />
     <arg name="y" default="0.0" />
@@ -132,11 +132,11 @@
     <!-- <remap from="move_base_simple/goal" to="/planner_goal"/> -->
 
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_common.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_local.yaml" command="load" />
-        <rosparam file="$(find husky-stereo-nav)/config/costmap_global.yaml" command="load" />
-        <rosparam file="$(find husky-stereo-nav)/config/base_local_planner_params.yaml" command="load" />
+        <rosparam file="$(find husky_stereo_nav)/config/costmap_common.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find husky_stereo_nav)/config/costmap_common.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find husky_stereo_nav)/config/costmap_local.yaml" command="load" />
+        <rosparam file="$(find husky_stereo_nav)/config/costmap_global.yaml" command="load" />
+        <rosparam file="$(find husky_stereo_nav)/config/base_local_planner_params.yaml" command="load" />
     </node>
 
     <!-- <param name="cmd_vel/abtr_priority" value="10"/> -->
@@ -154,6 +154,6 @@ I would assume that for this simple setup the performance of the arm-system and 
 	    args="0 0 0 0 0 0 base_link zed_base_link 100" />  -->
 
 
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find husky-stereo-nav)/rviz/zed_outdoor_nav.rviz" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find husky_stereo_nav)/rviz/zed_outdoor_nav.rviz" />
 
 </launch>
