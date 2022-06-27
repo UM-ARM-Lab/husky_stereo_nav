@@ -28,7 +28,8 @@
         </node>
 
         <!-- static TF publisher for ZED mount -->
-        <node pkg="tf" type="static_transform_publisher" name="zed_mount_link_publisher" args="0.4 0 0.8 0 0 0 base_link zed_mount_link 100" />
+        <node pkg="tf" type="static_transform_publisher" name="zed_mount_link_publisher" 
+            args="0.00635 0.169545 0.43815 1.570796 0 0 hdt_michigan_root zed_mount_link 100" />
 
         <!-- load ZED URDF -->
         <param name="zed2i_description" command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
