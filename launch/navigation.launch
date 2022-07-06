@@ -8,10 +8,9 @@
 
     <arg name="zed_frame" default="zed_mount_link" />
     <arg name="rtabmap_database_path" default="~/.ros/rtabmap.db" />
-    <arg name="static_map_path" default="$(find husky_stereo_nav)/maps/lab_filtered2.yaml" />
+    <arg name="static_map_path" default="$(find husky_stereo_nav)/maps/lab_layered1.yaml" />
     <arg name="rviz_config_path" default="$(find husky_stereo_nav)/rviz/navigation.rviz" />
-    <param name="waypoint_sequence_path" value="$(find husky_stereo_nav)/config/waypoints/lab_waypoints.json" />
-
+    <param name="waypoint_sequence_path" value="$(find husky_stereo_nav)/config/waypoints/roof_waypoints.json" />
     <arg name="nav_config_path" value="$(find husky_stereo_nav)/config/navigation" />
 
     <group ns="zed2i">
@@ -97,6 +96,7 @@
             <param name="Grid/MaxObstacleHeight" type="string" value="1" />
             <param name="Grid/NoiseFilteringRadius" type="string" value="0.4" />
             <param name="Grid/NoiseFilteringMinNeighbors" type="string" value="10" />
+            <param name="Reg/Force3DoF" value="true"/>
             <!-- <param name="Kp/WordsPerImage" type="string" value="200"/>
             <param name="Kp/RoiRatios" type="string" value="0.03 0.03 0.04 0.04"/>
             <param name="SURF/HessianThreshold" type="string" value="1000"/>
