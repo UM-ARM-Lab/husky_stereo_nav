@@ -1,2 +1,4 @@
 *.vscode/
 *.db
+*.pgm
+maps/*.yaml
