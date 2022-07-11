@@ -2,7 +2,7 @@
 import tf2_ros
 import rospy
 from std_msgs.msg import Int32
-from geometry_msgs.msg import TransformStamped, Quaternion, Vector3
+from geometry_msgs.msg import Transform, Quaternion, Vector3
 
 
 def main():
@@ -13,7 +13,7 @@ def main():
     tf_buffer = tf2_ros.Buffer()
     tf_listener = tf2_ros.TransformListener(tf_buffer)
 
-    old_tf = TransformStamped()
+    old_tf = Transform()
     loop_closure_count = 0
 
     while not rospy.is_shutdown():
