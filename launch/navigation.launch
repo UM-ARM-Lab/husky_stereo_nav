@@ -94,6 +94,7 @@
             <param name="Rtabmap/DetectionRate" type="string" value="1" />
             <param name="publish_tf" type="bool" value="true" />
             <param name="Grid/MaxObstacleHeight" type="string" value="1" />
+            <param name="Grid/MinObstacleHeight" type="string" value="0.02" />
             <param name="Grid/NoiseFilteringRadius" type="string" value="0.4" />
             <param name="Grid/NoiseFilteringMinNeighbors" type="string" value="10" />
             <param name="Reg/Force3DoF" value="true"/>
