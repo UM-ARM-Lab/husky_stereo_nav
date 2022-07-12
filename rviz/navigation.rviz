@@ -274,6 +274,25 @@ Visualization Manager:
                                                       {}
                           realsense:
                             {}
+                zed_mount_link:
+                  zed2i_base_link:
+                    zed2i_camera_center:
+                      zed2i_baro_link:
+                        {}
+                      zed2i_left_camera_frame:
+                        zed2i_imu_link:
+                          {}
+                        zed2i_left_camera_optical_frame:
+                          {}
+                        zed2i_temp_left_link:
+                          {}
+                      zed2i_mag_link:
+                        {}
+                      zed2i_right_camera_frame:
+                        zed2i_right_camera_optical_frame:
+                          {}
+                        zed2i_temp_right_link:
+                          {}
               imu_link:
                 {}
               inertial_link:
@@ -301,25 +320,6 @@ Visualization Manager:
                   {}
               user_rail_link:
                 {}
-              zed_mount_link:
-                zed2i_base_link:
-                  zed2i_camera_center:
-                    zed2i_baro_link:
-                      {}
-                    zed2i_left_camera_frame:
-                      zed2i_imu_link:
-                        {}
-                      zed2i_left_camera_optical_frame:
-                        {}
-                      zed2i_temp_left_link:
-                        {}
-                    zed2i_mag_link:
-                      {}
-                    zed2i_right_camera_frame:
-                      zed2i_right_camera_optical_frame:
-                        {}
-                      zed2i_temp_right_link:
-                        {}
       Update Interval: 0
       Value: true
     - Class: rviz/Group
@@ -345,7 +345,7 @@ Visualization Manager:
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
-          Topic: /move_base/NavfnROS/plan
+          Topic: /move_base/GlobalPlanner/plan
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -390,6 +390,16 @@ Visualization Manager:
           Enabled: true
           Name: Global Map
           Topic: /move_base/global_costmap/costmap
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
+        - Alpha: 0.699999988079071
+          Class: rviz/Map
+          Color Scheme: map
+          Draw Behind: false
+          Enabled: true
+          Name: Global Potential Map
+          Topic: /move_base/GlobalPlanner/potential
           Unreliable: false
           Use Timestamp: false
           Value: true
@@ -505,7 +515,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rtabmap_ros/OrbitOriented
-      Distance: 14.315896987915039
+      Distance: 15.912751197814941
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -521,9 +531,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9697973728179932
+      Pitch: 1.509796380996704
       Target Frame: <Fixed Frame>
-      Yaw: 3.150845527648926
+      Yaw: 3.2158491611480713
     Saved: ~
 Window Geometry:
   Displays:

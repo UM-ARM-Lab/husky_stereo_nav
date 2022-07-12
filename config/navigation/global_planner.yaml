@@ -1,0 +1,10 @@
+base_global_planner: global_planner/GlobalPlanner
+# base_global_planner: navfn/NavfnROS
+
+# GlobalPlanner:
+#   publish_potential: true
+#   visualize_potential: true
+
+# NavfnROS:
+#   visualize_potential: true
+#   publish_potential: true
