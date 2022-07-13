@@ -1,9 +1,12 @@
 base_global_planner: global_planner/GlobalPlanner
 # base_global_planner: navfn/NavfnROS
 
-# GlobalPlanner:
-#   publish_potential: true
-#   visualize_potential: true
+GlobalPlanner:
+  publish_potential: true
+  visualize_potential: true
+  neutral_cost: 66
+  cost_factor: 0.55
+  lethal_cost: 253
 
 # NavfnROS:
 #   visualize_potential: true

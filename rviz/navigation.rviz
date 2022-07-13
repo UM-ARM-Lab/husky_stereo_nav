@@ -385,7 +385,7 @@ Visualization Manager:
           Value: true
         - Alpha: 0.699999988079071
           Class: rviz/Map
-          Color Scheme: map
+          Color Scheme: costmap
           Draw Behind: false
           Enabled: true
           Name: Global Map
@@ -395,7 +395,7 @@ Visualization Manager:
           Value: true
         - Alpha: 0.699999988079071
           Class: rviz/Map
-          Color Scheme: map
+          Color Scheme: costmap
           Draw Behind: false
           Enabled: true
           Name: Global Potential Map
@@ -475,18 +475,50 @@ Visualization Manager:
           Value: false
       Enabled: false
       Name: RTAB-Map
-    - Class: rviz/Image
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /zed2i/zed_node/left/image_rect_color
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: ZED camera
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: RGB8
+          Decay Time: 0
+          Enabled: false
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Min Color: 0; 0; 0
+          Name: ZED Pointcloud
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic: /zed2i/zed_node/point_cloud/cloud_registered
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: false
       Enabled: true
-      Image Topic: /zed2i/zed_node/left/image_rect_color
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: ZED camera
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: true
+      Name: ZED
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -515,7 +547,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rtabmap_ros/OrbitOriented
-      Distance: 15.912751197814941
+      Distance: 20.208250045776367
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -523,17 +555,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.7901251316070557
-        Y: -2.882793426513672
-        Z: -0.29665958881378174
+        X: 2.224529266357422
+        Y: 3.722780704498291
+        Z: -0.4731658399105072
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.509796380996704
+      Pitch: 1.5647963285446167
       Target Frame: <Fixed Frame>
-      Yaw: 3.2158491611480713
+      Yaw: 3.140860080718994
     Saved: ~
 Window Geometry:
   Displays:
