@@ -25,8 +25,8 @@ TrajectoryPlannerROS:
   # vtheta_samples: 20
   # controller_frequency: 20.0
 
-  pdist_scale: 0.6
-  gdist_scale: 0.8
+  pdist_scale: 4
+  gdist_scale: 0.5
   # occdist_scale: 0.01
   # heading_lookahead: 0.325
   heading_scoring: false
