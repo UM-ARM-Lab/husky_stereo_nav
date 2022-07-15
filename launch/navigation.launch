@@ -132,7 +132,7 @@
         <param name="trajectory_publish_rate" type="double" value="0.25" />
     </node>
 
-    <node pkg="husky_stereo_nav" type="reset_path" name="reset_path" output="screen"></node>
+    <node pkg="husky_stereo_nav" type="reset_path.py" name="reset_path" output="screen"></node>
 
     <!-- launch custom RViz config -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_config_path)" />
