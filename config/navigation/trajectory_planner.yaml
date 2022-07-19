@@ -13,24 +13,25 @@ TrajectoryPlannerROS:
   escape_vel: -0.1
 
   # Goal Tolerance Parameters
-  yaw_goal_tolerance: 0.4
-  xy_goal_tolerance: 0.2
+  yaw_goal_tolerance: 0.2
+  xy_goal_tolerance: 0.08
   latch_xy_goal_tolerance: false
 
   # Forward Simulation Parameters
-  sim_time: 1.0
+  sim_time: 2.0
   # sim_granularity: 0.02
   # angular_sim_granularity: 0.02
   # vx_samples: 6
   # vtheta_samples: 20
   # controller_frequency: 20.0
 
-  pdist_scale: 4
-  gdist_scale: 0.5
-  # occdist_scale: 0.01
+  path_distance_bias: 1.0
+  goal_distance_bias: 0.05
+  occdist_scale: 0.01
   # heading_lookahead: 0.325
   heading_scoring: false
   prune_plan: true
+  meter_scoring: true
   # dwa: false
   # publish_cost_grid_pc: true
   
