@@ -21,7 +21,7 @@ zed_point_cloud:
   obstacle_range: 2.5
   raytrace_range: 6.0
   max_obstacle_height: 1.0
-  min_obstacle_height: 2.0
+  min_obstacle_height: 0.0
 
 # local_costmap/zed_point_cloud: {sensor_frame: zed2i_base_link, data_type: PointCloud2, topic: /zed2i/zed_node/point_cloud/cloud_registered, marking: true, clearing: true}
 # static:
