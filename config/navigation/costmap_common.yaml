@@ -9,7 +9,7 @@ transform_tolerance: 0.5
 # resolution: 0.05
 
 
-# observation_sources: zed_point_cloud
+observation_sources: zed_point_cloud
 # local_costmap/observation_sources: zed_point_cloud
 
 zed_point_cloud:
