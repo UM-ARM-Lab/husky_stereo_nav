@@ -43,6 +43,18 @@
         <node name="zed2i_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
             <remap from="robot_description" to="zed2i_description" />
         </node>
+
+        <!-- PCL filter for ZED pointcloud -->
+        <node name="statistical_outlier_removal"
+                pkg="nodelet" type="nodelet"
+                args="standalone pcl/StatisticalOutlierRemoval">
+            <remap from="input" to="zed_node/point_cloud/cloud_registered" />
+            <remap from="output" to="point_cloud_filtered" />
+            <rosparam>
+                mean_k: 10
+                stddev: 1.0
+            </rosparam>
+        </node>
     </group>
 
 
