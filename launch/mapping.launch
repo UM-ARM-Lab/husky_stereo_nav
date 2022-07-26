@@ -63,6 +63,7 @@
         <param name="GFTT/MaxCorners" type="string" value="500" />
         <param name="GFTT/MinDistance" type="string" value="5" />
         <param name="publish_tf" type="bool" value="true" />
+        <param name="Reg/Force3DoF" value="true"/>
     </node>
 
     <group ns="rtabmap">

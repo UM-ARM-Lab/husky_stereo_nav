@@ -26,12 +26,12 @@ TrajectoryPlannerROS:
   # controller_frequency: 20.0
 
   path_distance_bias: 1.0
-  goal_distance_bias: 0.05
+  goal_distance_bias: 0.2
   occdist_scale: 0.01
   # heading_lookahead: 0.325
   heading_scoring: false
   prune_plan: true
   meter_scoring: true
-  dwa: true
+  dwa: false
   # publish_cost_grid_pc: true
   
