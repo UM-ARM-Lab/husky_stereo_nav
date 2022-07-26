@@ -9,7 +9,7 @@
     <arg name="zed_frame" default="zed_mount_link" />
     <arg name="base_frame" default="base_link" />
     <arg name="rtabmap_database_path" default="~/.ros/rtabmap.db" />
-    <arg name="static_map_path" default="$(find husky_stereo_nav)/maps/lab_layered1.yaml" />
+    <arg name="static_map_path" default="$(find husky_stereo_nav)/maps/lab_filtered_new.yaml" />
     <arg name="rviz_config_path" default="$(find husky_stereo_nav)/rviz/navigation.rviz" />
     <param name="waypoint_sequence_path" value="$(find husky_stereo_nav)/config/waypoints/roof_waypoints.json" />
     <arg name="nav_config_path" value="$(find husky_stereo_nav)/config/navigation" />
@@ -79,6 +79,7 @@
         <param name="GFTT/MaxCorners" type="string" value="500" />
         <param name="GFTT/MinDistance" type="string" value="5" />
         <param name="publish_tf" type="bool" value="true" />
+        <param name="Reg/Force3DoF" value="true" />
     </node>
 
     <group ns="rtabmap">

@@ -14,7 +14,7 @@ TrajectoryPlannerROS:
 
   # Goal Tolerance Parameters
   yaw_goal_tolerance: 0.2
-  xy_goal_tolerance: 0.08
+  xy_goal_tolerance: 0.15
   latch_xy_goal_tolerance: false
 
   # Forward Simulation Parameters
@@ -32,6 +32,6 @@ TrajectoryPlannerROS:
   heading_scoring: false
   prune_plan: true
   meter_scoring: true
-  # dwa: false
+  dwa: true
   # publish_cost_grid_pc: true
   
