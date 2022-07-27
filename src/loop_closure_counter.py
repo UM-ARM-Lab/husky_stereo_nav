@@ -2,11 +2,11 @@
 import tf2_ros
 import rospy
 from std_msgs.msg import Int32
-from geometry_msgs.msg import Transform, Quaternion, Vector3, Pose
+from geometry_msgs.msg import PoseWithCovarianceStamped
 
 
 def main():
-    sub = rospy.Subscriber("rtabmap/rtabmap/localization_pose", Pose, loop_closure_callback)
+    sub = rospy.Subscriber("/rtabmap/localization_pose", PoseWithCovarianceStamped, loop_closure_callback)
     rospy.init_node("loop_closure_counter")
 
     global loop_closure_count
