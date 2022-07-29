@@ -112,6 +112,7 @@
             <param name="Grid/NoiseFilteringRadius" type="string" value="0.4" />
             <param name="Grid/NoiseFilteringMinNeighbors" type="string" value="10" />
             <param name="Reg/Force3DoF" value="true" />
+            <param name="Vis/MinInliers" value="35" />
             <!-- <param name="Kp/WordsPerImage" type="string" value="200"/>
             <param name="Kp/RoiRatios" type="string" value="0.03 0.03 0.04 0.04"/>
             <param name="SURF/HessianThreshold" type="string" value="1000"/>
