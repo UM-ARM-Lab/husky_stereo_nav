@@ -5,24 +5,19 @@ from actionlib import SimpleActionClient
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Pose, Point, Quaternion
 
+
 # send the given waypoint to the move_base action server as a goal
-
-
-def send_waypoint(client: SimpleActionClient, goal_pose: Pose, wait_between_goals: bool):
+def send_waypoint(client: SimpleActionClient, goal_pose: Pose):
     goal = MoveBaseGoal()
     goal.target_pose.header.frame_id = "map"
     goal.target_pose.header.stamp = rospy.Time.now()
     goal.target_pose.pose = goal_pose
 
-    rospy.loginfo("sending goal")
     client.send_goal(goal)
     client.wait_for_result()
 
-    rospy.loginfo(f"goal ended with state: {client.get_state()}")
-    if wait_between_goals:
-        input("press enter to continue to next waypoint")
 
-
+# translate GoalStatus message int to string
 def state_num_to_str(state_num: int) -> str:
     if state_num == 0:
         return "PENDING"
@@ -87,7 +82,17 @@ def main():
 
     # send waypoints sequentially to action server
     for w in waypoints:
-        send_waypoint(client, w, wait_between_goals)
+        rospy.loginfo("sending goal")
+        send_waypoint(client, w)
+        rospy.loginfo(
+            f"goal ended with state: {state_num_to_str(client.get_state())}")
+
+        if wait_between_goals:
+            cmd = input(
+                "press enter to continue to next waypoint, press c then enter to cancel")
+            if cmd == "c":
+                client.cancel_all_goals()
+                break
 
     rospy.loginfo("All waypoints complete!")
 
