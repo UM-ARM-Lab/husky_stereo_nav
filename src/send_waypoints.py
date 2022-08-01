@@ -89,7 +89,7 @@ def main():
 
         if wait_between_goals:
             cmd = input(
-                "press enter to continue to next waypoint, press c then enter to cancel")
+                "press enter to continue to next waypoint, press c then enter to cancel: ")
             if cmd == "c":
                 client.cancel_all_goals()
                 break
