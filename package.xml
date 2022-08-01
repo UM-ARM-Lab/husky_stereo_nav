@@ -53,6 +53,9 @@
   <depend>move_base</depend>
   <depend>rviz</depend>
   <depend>robot_state_publisher</depend>
+  <depend>pcl_ros</depend>
+  <depend>map_server</depend>
+  <depend>hector_trajectory_server</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
