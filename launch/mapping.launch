@@ -68,7 +68,7 @@
     <group ns="rtabmap">
         <!-- wait 10 seconds for ZED camera autoexposure before launching -->
         <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen"
-              args="--delete_db_on_start" launch-prefix="bash -c 'sleep 20; $0 $@'">
+              args="--delete_db_on_start" launch-prefix="bash -c 'sleep 10; $0 $@'">
 
             <param name="frame_id" type="string" value="base_link" />
 
