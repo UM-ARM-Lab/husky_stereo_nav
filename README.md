@@ -1,0 +1,200 @@
+# husky\_stereo\_nav
+
+This ROS Noetic package is intended as a visual SLAM navigation system for a Clearpath Husky 
+UGV equipped with a ZED 2i stereo camera. RTAB-Map visual SLAM is used with ROS move_base to 
+provide the Husky with the means to map and autonomously navigate. This package’s intended use 
+is navigation around an outdoor, rooftop garden box.
+
+### Installation
+
+This tutorial assumes you already have ROS Noetic installed on your machine. 
+If not, you can follow [the official guide](http://wiki.ros.org/noetic/Installation/Ubuntu)
+on how to do so.
+
+To install the husky_stereo_nav ROS package, you will need a catkin workspace.
+If you do not already have one, you can create one like this:
+```bash
+mkdir -p ~/catkin_ws/src
+cd ~/catkin_ws
+catkin init
+```
+Next, you need to clone the husky_stereo_nav repository into your catkin_ws:
+```bash
+cd catkin_ws/src
+git clone \[TODO: insert final repo link\]
+```
+Before you can run husky_stereo_nav, you need to install several ZED dependencies. 
+Follow [this tutorial](https://www.stereolabs.com/docs/installation/linux/) to install the ZED SDK,
+and [this tutorial](https://www.stereolabs.com/docs/ros/) to install the ZED ROS wrapper.
+
+Now you can install the rest of the husky_stereo_nav dependencies using rosdep, and then build the package:
+```bash
+cd ~/catkin_ws
+rosdep install --from-paths ~/catkin_ws/src --ignore-src -y --rosdistro=noetic
+catkin build
+```
+Finally, you need to source your workspace:
+```bash
+source ~/catkin_ws/devel/setup.bash
+```
+Now you should be ready to run husky_stereo_nav.
+
+
+### Stack Overview
+
+- This package uses RTAB-Map stereo mapping to generate a dense 3D map of the environment.
+  RTAB-Map’s visual odometry is then used with ROS’s move_base package for autonomous navigation.
+- TODO: insert installation instructions
+- Navigation using [move_base](http://wiki.ros.org/rtabmap_ros/Tutorials/StereoOutdoorNavigation)
+    - [Global planner](http://wiki.ros.org/global_planner) uses the 2D grid map .pgm/.yaml file to generate a global plan
+        - Global costmap adds a robot footprint buffer (cyan) to obstacles (dark purple) so the width of the robot is already taken care of
+        - Global planner also has an inflation radius costmap (purple to orange gradient) which weights potential global paths that are farther from obstacles as more optimal
+        
+        ![Screenshot from 2022-07-27 16-00-23.png](Screenshot_from_2022-07-27_16-00-23.png)
+        
+    - Local planner uses a flattened version of real-time 3D point cloud + information from the global plan to do obstacle avoidance (light purple)
+        - [Local planner](http://wiki.ros.org/base_local_planner) uses a cost function that can be tuned with parameters path_distance_bias and goal_distance_bias
+            - This trajectory doesn’t take into consideration the global map itself, just the global plan which is bad when the ZED doesn’t see obstacles in real time that are actually there in the global costmap
+            - Looked at both trajectoryPlanner and DWAPlanner which are apparently comparable; maybe compare them later when we have the chance
+
+### ROS Multi-Device Setup
+
+- Because the ZED stereo camera requires a GPU to run, which the Husky onboard computer doesn’t have, and the Husky drive controller must run on the Husky, we have to run ROS with 2 separate machines.
+- All of the navigation nodes run on the Razer laptop, while the Husky control nodes and ROS master run on the Husky onboard computer
+- In order to run ROS commands from the laptop correctly in this configuration, you need to:
+    - either connect to the Husky wifi hotspot (called “husky” in the list of available networks) and then run `source <husky_stereo_nav package path>/scripts/remote-husky.sh` (on the laptop this is also available as `source ~/remote-husky.sh`)
+    - or connect the laptop to the husky directly via ethernet using an ethernet to USB adapter on the laptop, and then run `source <husky_stereo_nav package path>/scripts/eth-remote-husky.sh` (on the laptop this is available as `source ~/eth-remote-husky.sh`
+    - This file must be sourced in every new bash instance you open
+    - ~~TODO: put correct name of ethernet source file, put it in the scripts dir in the repo, rename to .bash instead of .sh~~
+
+### Map File Types
+
+- `.db` files: these are where RTAB-Map (SLAM software) stores its 3D mapping information, as well as various other data, for a particular session
+- `.pgm` files: these are image files containing 2D static maps
+- `.yaml` files: these contain metadata associated with a certain `.pgm` file and are used to load static maps from, they should have the same name as the corresponding file
+
+### General workflow
+
+- copy desired `.db` file to `~/.ros/rtabmap.db` so that RTAB-Map can access it during runtime
+    - When navigating on the roof, you should use the layered map we recorded since it works in a wide variety of lighting conditions: `cp husky_stereo_nav/maps/[TODO: rename map to something better] ~/.ros/rtabmap.db`
+    - 
+- `roslaunch husky_stereo_nav navigation.launch`
+- wait 30 seconds to 1 minute for everything to start (you should see the 2D map and the robot footprint outline in RViz)
+- manually drive the robot around until it has localized in the map
+- send desired navigation goals
+
+## Mapping
+
+Although we have created a combined map that seems to work consistently across all lighting conditions, if a new map is desired this is the procedure for making one:
+
+- `roslaunch husky_stereo_nav mapping.launch`
+- wait 30 seconds to 1 minute for everything to start (you should see the beginnings of a 2D map and a 3D map point cloud)
+- be sure to drive the Husky in “slow” mode by holding down the left bumper and not the right one
+- As you drive, watch the progress of the both the 2D map and the 3D map point cloud
+- start driving around the desired area in a large loop, trying to get most of the boundaries in the map
+- Then drive to central areas to fill in gaps in the 2D map (clear areas are white, black areas are obstacles, and green areas are unfilled gaps)
+- once you have filled in most of your desired area on the map, you will probably have a few false obstacles and malformed shapes
+    - in RViz, hide the 3D map point cloud so you can better see the projected 2D map
+    - drive to these locations such that the features are in view of the camera,
+    - to fix false obstacles (obstacles that exist in the map but not in real life), let the robot sit with the area in frame for a few seconds. If they don’t clear up, try to view them from a different perspective and do the same
+    - to fix a malformed feature, drive slowly around the feature and let the robot sit for a few seconds at a variety of different perspectives
+    - use the 2D map as feedback, once the problems disappear in the map you can move on
+- While mapping, you may sometimes see features of the map drifting off incorrectly
+    
+    ![Screenshot from 2022-08-03 11-03-47.png](Screenshot_from_2022-08-03_11-03-47.png)
+    
+    - This likely means the odometry has drifted, and can usually be fixed by finding a loop closure
+    - so drive back to a previously visited pose and try to follow that previous path until the map corrects itself
+    - If it doesn’t correct itself, you will have to restart the mapping process
+- When navigating on the roof using waypoints (see series of waypoints below), the location of the predetermined waypoints are relative to the origin of the map. Thus if you want to use the same set of waypoints with multiple map files, the map origins will need to be in the same place. On the bottom right corner of the roof, there are three pieces of tape serving as alignment markers. To begin mapping in the same location, align the three 3D printed alignment sticks located on the Husky’s bumpers with the x marks on the tape alignment markers. Repeating this process prior to mapping will ensure that the maps will have origins in the same place relative to the roof.
+- TODO: insert picture
+- To ensure frequent localization, it is important that maps have accurate and widespread loop closures. Loop closures are visualized in rviz by red lines connecting blue RTAB-Map nodes. When mapping, ensure that loop closures are being found between nodes throughout the entire map. Revisit areas from different orientations if they are not getting any loop closures.
+
+![Screenshot from 2022-08-03 10-46-46.png](Screenshot_from_2022-08-03_10-46-46.png)
+
+- When the map is complete, we recommend driving the husky back to the map origin located at the tape alignment markers. This way you can check how close the robot base_link is to the map pose and thus get an estimate for how accurate the map is as a whole.
+- After mapping is complete, you need to save both the 2D map and 3D map:
+    - `roscd husky_stereo_nav/maps`
+    - `./record_maps.bash`
+    - enter the name you want to give your map
+    - go to the terminal where the mapping launch file is running and kill it with ctrl+c
+    - go back to the map recorder terminal and press enter
+    - now there should be `<name>.db`, `<name>.pgm`, and `<name>.yaml` all in the `husky_stereo_nav/maps` folder
+- When the Husky is intended to navigate in variable lighting conditions, it is recommended to generate one more robust `.db` file by combining multiple `.db` files recorded under different lighting conditions. For example, record a map of the environment on a sunny morning and a cloudy afternoon. To combine these maps together, run in your terminal: rtabmap-reprocess `“<path_to_first_map.db>;<path_to_second_map.db>; …” <name_of_combined_map.db>”`.
+
+## Navigating
+
+### Localizing
+
+- RTAB-Map records the location of the robot in its `.db` file, so on startup it will assume the robot is still in the last place you left it while that rtabmap session was running
+- If you moved the robot since the last time mapping or navigation was running, you will have to detect a loop closure to relocalize
+- to do this, drive slowly around the area, occasionally stopping for 10-15 seconds until you see the robot footprint jump to the correct location
+- If you want to be extra sure you detected a loop closure, you can use our loop closure counter by running `rosrun husky_stereo_nav count_loop_closures.py` in one terminal, `rostopic echo /loop_closure_count` in another, and waiting until the number goes above 0
+- On the roof specifically, we’ve noticed that some locations (probably ones with more distinguishable features) are better for localizing. If you have trouble localizing, make sure to try driving around the entire area to get as much coverage as possible
+
+### Single waypoint
+
+- Once the robot is properly localized, use the 2D Nav Goal button in rviz to specify a goal. This goal must be reachable by the robot, i.e. not in an obstacle or obstructed by obstacles
+- to use the 2D Nav Goal button, click on the location you want the goal to be, then drag the arrow in the direction you want the front of the Husky to face, then release to enter the goal
+- Once the goal has been entered, navigation will start. You can monitor the status of navigation by running `rostopic echo /move_base/status` . Upon entry of a goal, the status text field should say `“This goal has been accepted by the simple action server”`
+- If the goal is reachable, the global plan will be drawn as a green path in RViz
+- If the navigation stack can’t plan a global path, it should rotate in place up to 2 times in order to clear the local costmap and try to replan. If this is unsuccessful or it can not complete recovery behaviors, it will terminate and the status will read “`Failed to find a valid plan. Even after executing recovery behaviors.`”
+- once the global path is created, the local planner will start driving along it. at each timestep you will be able to see the local planned trajectory as an orange path in RViz
+- As the robot drives along the global path, it will plot a white path in RViz representing the actual path it has followed, which can be compared to the desired global path in green
+- As the robot tries to follow the global path, it may get stuck, in which case it will try to execute a few recovery maneuvers including backing up and rotating in place 2 times.
+- once the robot reaches the goal (meaning it is within the `xy_goal_tolerance` and `yaw_goal_tolerance` specified in `config/trajectory_planner.yaml`), the robot will stop moving and await the next entered goal
+
+### Series of waypoints
+
+- If you want to instead navigate to a series of predetermined locations, you can use our send_waypoints node
+- first, put your coordinate sequence in a JSON file in the following format:
+    
+    ```json
+    [
+        {
+            "position": {
+                "x": -0.85,
+                "y": 2.34,
+                "z": 0.0
+            },
+            "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+    		...
+    ]
+    ```
+    
+    these coordinates are in the `map` frame, which will have its origin at the place you started recording the map
+    
+- then change line 14 of `navigation.launch` to set the param `waypoint_sequence_path` to the path of your JSON file (you can also set this param with a `rosparam` command)
+- after launching `navigation.launch`, in a new terminal window run `rosrun husky_stereo_nav send_waypoints.py`
+- the series of goals will then be executed one by one, and you will see the end state of each goal reported on the command line
+- After each goal, you need to press enter to continue to the next goal, or instead you can press ‘c’ then enter in order to cancel the rest of the goals
+- if you instead want all the goals to be sent sequentially without requiring user input, you can run `rosrun husky_stereo_nav send_waypoints.py _wait_between_goals:=true` instead of the original command
+
+## Possible Errors
+
+- ~~[TODO: error messages for wifi issue]: This usually happens when you try to launch either navigation or mapping while connected to the Husky wifi hotspot (although it can also happen when connected over ethernet), and is caused by high network latency. If you keep on trying to run the same command, usually it will eventually launch once the network delay goes away (although sometimes it can take a while). If this isn’t working, you can try disconnecting and reconnecting to the husky hotspot, or power cycling the Husky.~~
+- [TODO: error messages for invalid TFs]: This happens when you launch navigation or mapping and you didn’t source the correct setup file. This is caused by the ROS master running on the laptop and therefore not getting connected to the Husky, so the Husky URDF isn’t available and therefore several transforms that we use aren’t available. To fix this, simply follow the instructions in the ROS Multi Device Setup section, being sure to source the correct file.
+- [TODO: error messages for not enough correspondencies]: If you see this error constantly and there is no longer a transform from `odom` to `base_link`, then it means the visual odometry has lost track and is unable to localize anymore. This usually happens when something entirely covers up the ZED cameras, and can be fixed by restarting the launch file. It’s okay for this error to show up once in a while, as long as the transform still exists.
+- [TODO: error messages for
+
+## Bugs/Issues
+
+- When mapping, the beginning of the map would often be inaccurate due to the ZED camera’s high exposure upon startup. To solve this issue, a 10 second delay was added between the time of starting the ZED camera and launching RTAB-Map to allow the camera time to adjust.
+
+### Local Costmap
+
+- The local costmap, a 2D projection of the live ZED point cloud, is used to avoid live obstacles that don’t appear in the map file. The ZED point cloud was often extremely noisy, causing obstacles to appear in the local costmap that didn’t actually exist. To fix this, the live ZED feed depth quality was changed to from 1 to 4 (neural mode) by modifying the quality parameter in ZED `common.yaml`.
+- When navigating, there were cases where the floor was projected in to the local costmap, incorrectly making it an obstacle. To fix this, the `min_obstacle_height` in `costmap_common.yaml` was added to filter out any points below 0.1 meters. To prevent any low hanging obstacles that the robot could drive under from appearing in our local costmap, the `max_obstacle_height` was set to 0.8 meters above base_link, just above the top of the robot.
+- The 3DoF enforcement (see Mapping and Localization) also contributed to preventing the floor from appearing in the local costmap by forcing the correct odometry in the z-axis.
+
+### Global Planner
+
+- base_global_planner is used by move_base to generate a complete path to a goal. Initially the global planner had a variety of issues, including unintuitively picking longer/more complicated routes and planning very close to obstacles.
+- Prior to using base_global_planner, the global planner used was NavfnROS. Following switching to base_global_planner, the global planner planned much more predictably, but still very close to obstacles.
+- After reading a parameter tuning paper, we determined our understanding of inflation_radius was incorrect. Inflation radius actually refers to the
