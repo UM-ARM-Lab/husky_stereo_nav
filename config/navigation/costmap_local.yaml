@@ -9,7 +9,3 @@ local_costmap:
   width: 4.0
   height: 4.0
   resolution: 0.05
-
-  # plugins:
-  #   - {name: obstacles_laser,           type: "costmap_2d::ObstacleLayer"}
-  #   - {name: inflation,                 type: "costmap_2d::InflationLayer"}

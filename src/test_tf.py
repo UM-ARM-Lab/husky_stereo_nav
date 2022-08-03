@@ -2,7 +2,7 @@
 import tf2_ros
 import rospy
 
-
+# script for testing base_footprint tf lookup error
 def main():
     rospy.init_node("test_tfs")
     rate = rospy.Rate(10.0)

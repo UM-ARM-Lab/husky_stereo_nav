@@ -12,26 +12,20 @@ TrajectoryPlannerROS:
   holonomic_robot: false
   escape_vel: -0.1
 
-  # Goal Tolerance Parameters
   yaw_goal_tolerance: 0.2
   xy_goal_tolerance: 0.15
   latch_xy_goal_tolerance: false
 
-  # Forward Simulation Parameters
+  # forward simulation parameters
   sim_time: 2.0
-  # sim_granularity: 0.02
-  # angular_sim_granularity: 0.02
-  # vx_samples: 6
-  # vtheta_samples: 20
-  # controller_frequency: 20.0
 
+  # path cost function weights
   path_distance_bias: 1.0
   goal_distance_bias: 0.2
   occdist_scale: 0.01
-  # heading_lookahead: 0.325
+  
   heading_scoring: false
   prune_plan: true
   meter_scoring: true
   dwa: false
-  # publish_cost_grid_pc: true
   

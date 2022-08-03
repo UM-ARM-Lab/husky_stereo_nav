@@ -7,7 +7,6 @@
     <arg name="right_camera_info" value="/zed2i/zed_node/right/camera_info" />
 
     <arg name="zed_frame" default="zed_mount_link" />
-    <arg name="rtabmap_database_path" default="~/.ros/rtabmap.db" />
     <arg name="rviz_config_path" default="$(find husky_stereo_nav)/rviz/mapping.rviz" />
 
     <group ns="zed2i">
@@ -16,19 +15,12 @@
             <rosparam file="$(find husky_stereo_nav)/config/zed/common.yaml" command="load" />
             <rosparam file="$(find husky_stereo_nav)/config/zed/zed2i.yaml" command="load" />
 
-            <param name="general/camera_name" value="zed2i" />
             <param name="general/base_frame" value="$(arg zed_frame)" />
-            <param name="general/zed_id" value="0" />
-            <param name="general/gpu_id" value="-1" />
-
-            <!-- Disable publishing of ZED odometry TFs-->
-            <param name="pos_tracking/publish_tf" value="false" />
-            <param name="pos_tracking/publish_map_tf" value="false" />
         </node>
 
         <!-- static TF publisher for ZED mount -->
         <node pkg="tf" type="static_transform_publisher" name="zed_mount_link_publisher" 
-            args="0.00635 0.169545 0.43815 1.570796 0 0 hdt_michigan_root zed_mount_link 100" />
+              args="0.00635 0.169545 0.43815 1.570796 0 0 hdt_michigan_root zed_mount_link 100" />
 
         <!-- load ZED URDF -->
         <param name="zed2i_description" command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
@@ -43,38 +35,45 @@
     </group>
 
 
-    <!-- Visual Odometry -->
-    <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen" launch-prefix="bash -c 'sleep 20; $0 $@'">
+    <!-- visual odometry -->
+    <!-- wait 10 seconds for ZED camera autoexposure before launching -->
+    <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen" launch-prefix="bash -c 'sleep 10; $0 $@'">
         <remap from="left/image_rect" to="$(arg left_image)" />
         <remap from="right/image_rect" to="$(arg right_image)" />
         <remap from="left/camera_info" to="$(arg left_camera_info)" />
         <remap from="right/camera_info" to="$(arg right_camera_info)" />
         <remap from="odom" to="/odometry" />
+        
         <param name="frame_id" type="string" value="base_link" />
-
-        <!-- TODO: find out what this means -->
         <param name="odom_frame_id" type="string" value="odom" />
 
+        <!-- params controlling how strict odometry is about accepting correspondences,
+             trade-off between frequency/robustness and accuracy -->
         <param name="Odom/InlierDistance" type="string" value="0.1" />
         <param name="Odom/MinInliers" type="string" value="10" />
-        <param name="Odom/RoiRatios" type="string" value="0.03 0.03 0.04 0.04" />
-        <param name="Odom/MaxDepth" type="string" value="10" />
 
+        <!-- don't look for correspondences in the top and bottom 3% and the left and right 4% of the image -->
+        <param name="Odom/RoiRatios" type="string" value="0.03 0.03 0.04 0.04" />
+
+        <param name="Odom/MaxDepth" type="string" value="10" />
         <param name="GFTT/MaxCorners" type="string" value="500" />
         <param name="GFTT/MinDistance" type="string" value="5" />
         <param name="publish_tf" type="bool" value="true" />
+
+        <!-- restrict pose of robot to 3 degrees of freedom (x, y, theta), i.e a 2D plane -->
         <param name="Reg/Force3DoF" value="true"/>
     </node>
 
+    <!-- visual SLAM -->
     <group ns="rtabmap">
-        <!-- Visual Localization using pre recorded 3D map -->
-        <!-- database_path:=$(arg rtabmap_database_path) -->
-        <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="--delete_db_on_start" launch-prefix="bash -c 'sleep 20; $0 $@'">
+        <!-- wait 10 seconds for ZED camera autoexposure before launching -->
+        <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen"
+              args="--delete_db_on_start" launch-prefix="bash -c 'sleep 20; $0 $@'">
 
             <param name="frame_id" type="string" value="base_link" />
-            <param name="subscribe_stereo" type="bool" value="true" />
 
-            <!-- TODO: is this necessary? -->
+            <!-- subscribe to stereo images as the input source -->
+            <param name="subscribe_stereo" type="bool" value="true" />
             <param name="subscribe_depth" type="bool" value="false" />
 
             <remap from="left/image_rect" to="$(arg left_image)" />
@@ -85,28 +84,30 @@
 
             <param name="queue_size" type="int" value="30" />
 
-            <!-- RTAB-Map parameters -->
+            <!-- SLAM mode -->
             <param name="Mem/IncrementalMemory" type="string" value="true" />
+            
+            <!-- start putting nodes in long term memory once graph optimization takes more than this many ms -->
             <param name="Rtabmap/TimeThr" type="string" value="700" />
+
+            <!-- make new nodes at this rate (Hz) -->
             <param name="Rtabmap/DetectionRate" type="string" value="1" />
             <param name="publish_tf" type="bool" value="true" />
+            
+            <!-- only use this height range for projecting the 2D grid_map -->
             <param name="Grid/MaxObstacleHeight" type="string" value="1" />
             <param name="Grid/MaxGroundHeight" type="string" value="0.02" />
+
+            <!-- apply filtering min neighbors filtering to 3D map pointcloud before projecting the 2D grid_map -->
             <param name="Grid/NoiseFilteringRadius" type="string" value="0.4" />
             <param name="Grid/NoiseFilteringMinNeighbors" type="string" value="10" />
+
+            <!-- restrict pose of robot to 3 degrees of freedom (x, y, theta), i.e a 2D plane -->
             <param name="Reg/Force3DoF" value="true"/>
-            <!-- <param name="Kp/WordsPerImage" type="string" value="200"/>
-            <param name="Kp/RoiRatios" type="string" value="0.03 0.03 0.04 0.04"/>
-            <param name="SURF/HessianThreshold" type="string" value="1000"/>
-            <param name="LccBow/MaxDepth" type="string" value="5"/>
-            <param name="LccBow/MinInliers" type="string" value="10"/>
-            <param name="LccBow/InlierDistance" type="string" value="0.05"/>
-            <param name="LccReextract/Activated" type="string" value="true"/>
-            <param name="LccReextract/MaxWords" type="string" value="500"/> -->
         </node>
     </group>
 
-    <!-- launch custom RViz config -->
+    <!-- custom RViz config -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_config_path)" />
 
 </launch>

@@ -1,3 +1,4 @@
+# Experimental script for measuring translational and rotational error of Husky
 
 from scipy.optimize import minimize
 import numpy as np

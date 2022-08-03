@@ -6,8 +6,13 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Pose, Point, Quaternion
 
 
-# send the given waypoint to the move_base action server as a goal
 def send_waypoint(client: SimpleActionClient, goal_pose: Pose):
+    """
+    Send the given waypoint to move_base as a goal
+
+    :param client: the action client used to send the goal
+    :param goal_pose: the waypoint to send as a goal, defined as a pose in the map frame
+    """
     goal = MoveBaseGoal()
     goal.target_pose.header.frame_id = "map"
     goal.target_pose.header.stamp = rospy.Time.now()
@@ -17,8 +22,14 @@ def send_waypoint(client: SimpleActionClient, goal_pose: Pose):
     client.wait_for_result()
 
 
-# translate GoalStatus message int to string
 def state_num_to_str(state_num: int) -> str:
+    """
+    Decode the GoalStatus int to its corresponding status string
+
+    :param state_num: the GoalStatus int to decode
+
+    :returns: the corresponding status message string
+    """
     if state_num == 0:
         return "PENDING"
     elif state_num == 1:
@@ -43,8 +54,14 @@ def state_num_to_str(state_num: int) -> str:
         return "INVALID STATE"
 
 
-# convert a json like dictionary containing pose data into a ROS Pose message
 def dict_to_pose(pose_dict: dict) -> Pose:
+    """
+    convert a JSON-like dictionary containing pose data into a ROS Pose message
+
+    :param pose_dict: the JSON-like dictionary to convert
+
+    :returns: a ROS Pose message
+    """
     pose = Pose()
     pose.position = Point(x=pose_dict["position"]["x"],
                           y=pose_dict["position"]["y"],
@@ -57,6 +74,10 @@ def dict_to_pose(pose_dict: dict) -> Pose:
 
 
 def main():
+    """
+    Sequentially send a series of waypoint goals defined in a JSON file to move_base,
+    optionally waiting for user input in between each goal
+    """
 
     # initialize node and action client
     rospy.init_node("waypoint_sender")
@@ -84,12 +105,10 @@ def main():
     for w in waypoints:
         rospy.loginfo("sending goal")
         send_waypoint(client, w)
-        rospy.loginfo(
-            f"goal ended with state: {state_num_to_str(client.get_state())}")
+        rospy.loginfo(f"goal ended with state: {state_num_to_str(client.get_state())}")
 
         if wait_between_goals:
-            cmd = input(
-                "press enter to continue to next waypoint, press c then enter to cancel: ")
+            cmd = input("press enter to continue to next waypoint, press c then enter to cancel: ")
             if cmd == "c":
                 client.cancel_all_goals()
                 break

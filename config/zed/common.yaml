@@ -1,4 +1,4 @@
-# params/common.yaml
+# Adapted from ZED default parameter file zed_wrapper/params/common.yaml
 # Common parameters to Stereolabs ZED and ZED mini cameras
 ---
 
@@ -45,8 +45,8 @@ depth:
 
 pos_tracking:
     pos_tracking_enabled:       true                            # True to enable positional tracking from start
-    publish_tf:                 true                            # publish `odom -> base_link` TF
-    publish_map_tf:             true                            # publish `map -> odom` TF
+    publish_tf:                 false                            # publish `odom -> base_link` TF
+    publish_map_tf:             false                            # publish `map -> odom` TF
     map_frame:                  'map'                           # main frame
     odometry_frame:             'odom'                          # odometry frame
     area_memory_db_path:        'zed_area_memory.area'          # file loaded when the node starts to restore the "known visual features" map. 

@@ -1,9 +1,10 @@
-# params/zed2i.yaml
+# Adapted from default ZED parameter file zed_wrapper/params/zed2i.yaml
 # Parameters for Stereolabs ZED2 camera
 ---
 
 general:
     camera_model:               'zed2i'
+    camera_name:               'zed2i'
 
 depth:
     min_depth:                  0.3             # Min: 0.2, Max: 3.0 - Default 0.7 - Note: reducing this value wil require more computational power and GPU memory

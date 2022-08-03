@@ -16,6 +16,7 @@ def pointcloud_callback(msg):
     print(f"I found tf: {tf}")
 
 
+# script for testing TF delay errors
 def main():
     global tf_buffer
     pointcloud_sub = rospy.Subscriber(
