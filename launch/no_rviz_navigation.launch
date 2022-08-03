@@ -62,14 +62,9 @@
 
         <!-- params controlling how strict odometry is about accepting correspondences,
              trade-off between frequency/robustness and accuracy -->
-        <param name="Odom/InlierDistance" type="string" value="0.1" />
-        <param name="Odom/MinInliers" type="string" value="10" />
+        <param name="Vis/InlierDistance" type="string" value="0.1" />
+        <param name="Vis/MinInliers" type="string" value="10" />
 
-        <!-- don't look for correspondences in the top and bottom 3% and the left and right 4% of the image -->
-        <param name="Odom/RoiRatios" type="string" value="0.03 0.03 0.04 0.04" />
-        <param name="Odom/MaxDepth" type="string" value="10" />
-
-        <param name="GFTT/MaxCorners" type="string" value="500" />
         <param name="GFTT/MinDistance" type="string" value="5" />
         <param name="publish_tf" type="bool" value="true" />
 
