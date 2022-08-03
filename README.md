@@ -1,17 +1,13 @@
 # husky\_stereo\_nav
 
-This ROS Noetic package is intended as a visual SLAM navigation system for a Clearpath Husky 
-UGV equipped with a ZED 2i stereo camera. RTAB-Map visual SLAM is used with ROS move_base to 
-provide the Husky with the means to map and autonomously navigate. This package’s intended use 
-is navigation around an outdoor, rooftop garden box.
+This ROS Noetic package is intended as a visual SLAM navigation system for a [Clearpath Robotics Husky](https://clearpathrobotics.com/husky-unmanned-ground-vehicle-robot/) equipped with a ZED 2i stereo camera. RTAB-Map visual SLAM is used with the [ROS navigation stack](http://wiki.ros.org/navigation), allowing the husky to map and autonomously navigate. This package was designed for navigation around an outdoor garden bed.
 
-### Installation
+## Installation
 
 This tutorial assumes you already have ROS Noetic installed on your machine. 
-If not, you can follow [the official guide](http://wiki.ros.org/noetic/Installation/Ubuntu)
-on how to do so.
+If not, you can follow [the official guide](http://wiki.ros.org/noetic/Installation/Ubuntu).
 
-To install the husky_stereo_nav ROS package, you will need a catkin workspace.
+To install the husky_stereo_nav package, you will need a catkin workspace.
 If you do not already have one, you can create one like this:
 ```bash
 mkdir -p ~/catkin_ws/src
@@ -21,7 +17,7 @@ catkin init
 Next, you need to clone the husky_stereo_nav repository into your catkin_ws:
 ```bash
 cd catkin_ws/src
-git clone \[TODO: insert final repo link\]
+git clone [TODO: insert final repo link]
 ```
 Before you can run husky_stereo_nav, you need to install several ZED dependencies. 
 Follow [this tutorial](https://www.stereolabs.com/docs/installation/linux/) to install the ZED SDK,
@@ -40,40 +36,21 @@ source ~/catkin_ws/devel/setup.bash
 Now you should be ready to run husky_stereo_nav.
 
 
-### Stack Overview
+## ROS Multi-Device Setup
 
-- This package uses RTAB-Map stereo mapping to generate a dense 3D map of the environment.
-  RTAB-Map’s visual odometry is then used with ROS’s move_base package for autonomous navigation.
-- TODO: insert installation instructions
-- Navigation using [move_base](http://wiki.ros.org/rtabmap_ros/Tutorials/StereoOutdoorNavigation)
-    - [Global planner](http://wiki.ros.org/global_planner) uses the 2D grid map .pgm/.yaml file to generate a global plan
-        - Global costmap adds a robot footprint buffer (cyan) to obstacles (dark purple) so the width of the robot is already taken care of
-        - Global planner also has an inflation radius costmap (purple to orange gradient) which weights potential global paths that are farther from obstacles as more optimal
-        
-        ![Screenshot from 2022-07-27 16-00-23.png](Screenshot_from_2022-07-27_16-00-23.png)
-        
-    - Local planner uses a flattened version of real-time 3D point cloud + information from the global plan to do obstacle avoidance (light purple)
-        - [Local planner](http://wiki.ros.org/base_local_planner) uses a cost function that can be tuned with parameters path_distance_bias and goal_distance_bias
-            - This trajectory doesn’t take into consideration the global map itself, just the global plan which is bad when the ZED doesn’t see obstacles in real time that are actually there in the global costmap
-            - Looked at both trajectoryPlanner and DWAPlanner which are apparently comparable; maybe compare them later when we have the chance
-
-### ROS Multi-Device Setup
-
-- Because the ZED stereo camera requires a GPU to run, which the Husky onboard computer doesn’t have, and the Husky drive controller must run on the Husky, we have to run ROS with 2 separate machines.
-- All of the navigation nodes run on the Razer laptop, while the Husky control nodes and ROS master run on the Husky onboard computer
+Because the ZED stereo camera requires a GPU to run, which the Husky onboard computer doesn’t have, and the Husky drive controller must run on the Husky, we have to run ROS with 2 separate machines. All of the navigation nodes run on the Razer laptop, while the Husky control nodes and ROS master run on the Husky onboard computer.
 - In order to run ROS commands from the laptop correctly in this configuration, you need to:
-    - either connect to the Husky wifi hotspot (called “husky” in the list of available networks) and then run `source <husky_stereo_nav package path>/scripts/remote-husky.sh` (on the laptop this is also available as `source ~/remote-husky.sh`)
-    - or connect the laptop to the husky directly via ethernet using an ethernet to USB adapter on the laptop, and then run `source <husky_stereo_nav package path>/scripts/eth-remote-husky.sh` (on the laptop this is available as `source ~/eth-remote-husky.sh`
+    - either connect to the Husky wifi hotspot (called “husky” in the list of available networks) and then run `source <husky_stereo_nav package path>/scripts/remote-husky.bash` (on the laptop this is also available as `source ~/remote-husky.bash`)
+    - or connect the laptop to the husky directly via ethernet using an ethernet to USB adapter on the laptop, and then run `source <husky_stereo_nav package path>/scripts/eth-remote-husky.bash` (on the laptop this is available as `source ~/eth-remote-husky.bash`
     - This file must be sourced in every new bash instance you open
-    - ~~TODO: put correct name of ethernet source file, put it in the scripts dir in the repo, rename to .bash instead of .sh~~
 
-### Map File Types
+## Map File Types
 
 - `.db` files: these are where RTAB-Map (SLAM software) stores its 3D mapping information, as well as various other data, for a particular session
 - `.pgm` files: these are image files containing 2D static maps
 - `.yaml` files: these contain metadata associated with a certain `.pgm` file and are used to load static maps from, they should have the same name as the corresponding file
 
-### General workflow
+## General workflow
 
 - copy desired `.db` file to `~/.ros/rtabmap.db` so that RTAB-Map can access it during runtime
     - When navigating on the roof, you should use the layered map we recorded since it works in a wide variety of lighting conditions: `cp husky_stereo_nav/maps/[TODO: rename map to something better] ~/.ros/rtabmap.db`
@@ -85,6 +62,7 @@ Now you should be ready to run husky_stereo_nav.
 
 ## Mapping
 
+### TODO: update this based on new info about RTABMAP nodes
 Although we have created a combined map that seems to work consistently across all lighting conditions, if a new map is desired this is the procedure for making one:
 
 - `roslaunch husky_stereo_nav mapping.launch`
@@ -181,20 +159,3 @@ Although we have created a combined map that seems to work consistently across a
 - ~~[TODO: error messages for wifi issue]: This usually happens when you try to launch either navigation or mapping while connected to the Husky wifi hotspot (although it can also happen when connected over ethernet), and is caused by high network latency. If you keep on trying to run the same command, usually it will eventually launch once the network delay goes away (although sometimes it can take a while). If this isn’t working, you can try disconnecting and reconnecting to the husky hotspot, or power cycling the Husky.~~
 - [TODO: error messages for invalid TFs]: This happens when you launch navigation or mapping and you didn’t source the correct setup file. This is caused by the ROS master running on the laptop and therefore not getting connected to the Husky, so the Husky URDF isn’t available and therefore several transforms that we use aren’t available. To fix this, simply follow the instructions in the ROS Multi Device Setup section, being sure to source the correct file.
 - [TODO: error messages for not enough correspondencies]: If you see this error constantly and there is no longer a transform from `odom` to `base_link`, then it means the visual odometry has lost track and is unable to localize anymore. This usually happens when something entirely covers up the ZED cameras, and can be fixed by restarting the launch file. It’s okay for this error to show up once in a while, as long as the transform still exists.
-- [TODO: error messages for
-
-## Bugs/Issues
-
-- When mapping, the beginning of the map would often be inaccurate due to the ZED camera’s high exposure upon startup. To solve this issue, a 10 second delay was added between the time of starting the ZED camera and launching RTAB-Map to allow the camera time to adjust.
-
-### Local Costmap
-
-- The local costmap, a 2D projection of the live ZED point cloud, is used to avoid live obstacles that don’t appear in the map file. The ZED point cloud was often extremely noisy, causing obstacles to appear in the local costmap that didn’t actually exist. To fix this, the live ZED feed depth quality was changed to from 1 to 4 (neural mode) by modifying the quality parameter in ZED `common.yaml`.
-- When navigating, there were cases where the floor was projected in to the local costmap, incorrectly making it an obstacle. To fix this, the `min_obstacle_height` in `costmap_common.yaml` was added to filter out any points below 0.1 meters. To prevent any low hanging obstacles that the robot could drive under from appearing in our local costmap, the `max_obstacle_height` was set to 0.8 meters above base_link, just above the top of the robot.
-- The 3DoF enforcement (see Mapping and Localization) also contributed to preventing the floor from appearing in the local costmap by forcing the correct odometry in the z-axis.
-
-### Global Planner
-
-- base_global_planner is used by move_base to generate a complete path to a goal. Initially the global planner had a variety of issues, including unintuitively picking longer/more complicated routes and planning very close to obstacles.
-- Prior to using base_global_planner, the global planner used was NavfnROS. Following switching to base_global_planner, the global planner planned much more predictably, but still very close to obstacles.
-- After reading a parameter tuning paper, we determined our understanding of inflation_radius was incorrect. Inflation radius actually refers to the
