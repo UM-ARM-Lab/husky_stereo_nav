@@ -98,7 +98,10 @@ Although we have created a combined map that seems to work consistently across a
     - go to the terminal where the mapping launch file is running and kill it with ctrl+c
     - go back to the map recorder terminal and press enter
     - now there should be `<name>.db`, `<name>.pgm`, and `<name>.yaml` all in the `husky_stereo_nav/maps` folder
-- When the Husky is intended to navigate in variable lighting conditions, it is recommended to generate one more robust `.db` file by combining multiple `.db` files recorded under different lighting conditions. For example, record a map of the environment on a sunny morning and a cloudy afternoon. To combine these maps together, run in your terminal: rtabmap-reprocess `“<path_to_first_map.db>;<path_to_second_map.db>; …” <name_of_combined_map.db>”`.
+- When the Husky is intended to navigate in variable lighting conditions, it is recommended to generate one more robust `.db` file by combining multiple `.db` files recorded under different lighting conditions. For example, record a map of the environment on a sunny morning and a cloudy afternoon. To combine these maps together, run in your terminal:
+```bash
+rtabmap-reprocess "<path_to_first_map.db>;<path_to_second_map.db>; ..." <name_of_combined_map.db>”
+```
 
 ## Navigating
 
@@ -141,8 +144,7 @@ Although we have created a combined map that seems to work consistently across a
                 "z": 0.0,
                 "w": 1.0
             }
-        },
-    		...
+        }
     ]
     ```
     
@@ -156,6 +158,37 @@ Although we have created a combined map that seems to work consistently across a
 
 ## Possible Errors
 
-- ~~[TODO: error messages for wifi issue]: This usually happens when you try to launch either navigation or mapping while connected to the Husky wifi hotspot (although it can also happen when connected over ethernet), and is caused by high network latency. If you keep on trying to run the same command, usually it will eventually launch once the network delay goes away (although sometimes it can take a while). If this isn’t working, you can try disconnecting and reconnecting to the husky hotspot, or power cycling the Husky.~~
-- [TODO: error messages for invalid TFs]: This happens when you launch navigation or mapping and you didn’t source the correct setup file. This is caused by the ROS master running on the laptop and therefore not getting connected to the Husky, so the Husky URDF isn’t available and therefore several transforms that we use aren’t available. To fix this, simply follow the instructions in the ROS Multi Device Setup section, being sure to source the correct file.
-- [TODO: error messages for not enough correspondencies]: If you see this error constantly and there is no longer a transform from `odom` to `base_link`, then it means the visual odometry has lost track and is unable to localize anymore. This usually happens when something entirely covers up the ZED cameras, and can be fixed by restarting the launch file. It’s okay for this error to show up once in a while, as long as the transform still exists.
+```
+RLException: Unable to contact my own server at [http://192.168.131.3:46067/].
+This usually means that the network is not configured properly.
+
+A common cause is that the machine cannot connect to itself.  Please check
+for errors by running:
+
+	ping 192.168.131.3
+
+For more tips, please see
+
+	http://wiki.ros.org/ROS/NetworkSetup
+
+The traceback for the exception was written to the log file
+```
+```
+RLException: run_id on parameter server does not match declared run_id: a7686552-1345-11ed-b1ee-9571e6692334 vs d167be52-1359-11ed-a4cf-f5b0987eef57
+The traceback for the exception was written to the log file
+```
+```
+RLException: ERROR: unable to contact ROS master at [http://10.42.0.1:11311]
+The traceback for the exception was written to the log file
+```
+
+- These errors can happen when you try to launch either navigation or mapping while connected to the Husky wifi hotspot (although it can also happen when connected over ethernet), and is caused by high network latency. If you keep on trying to run the same command, usually it will eventually launch once the network delay goes away (although sometimes it can take a while). If this isn’t working, you can try disconnecting and reconnecting to the husky hotspot, or power cycling the Husky.
+
+```
+odometry: Could not get transform from base_link to zed2i_left_camera_optical_frame (stamp=1659552094.128832) after 0.100000 seconds ("wait_for_transform_duration"=0.100000)! Error="canTransform: target_frame base_link does not exist.. canTransform returned after 0.100702 timeout was 0.1."
+```
+- This happens when you launch navigation or mapping and you didn’t source the correct setup file. This is caused by the ROS master running on the laptop and therefore not getting connected to the Husky, so the Husky URDF isn’t available and therefore several transforms that we use aren’t available. To fix this, simply follow the instructions in the ROS Multi Device Setup section, being sure to source the correct file.
+```
+computeCorrespondences() A large number (320/320) of stereo correspondences are rejected! Optical flow may have failed because images are not calibrated, the background is too far (no disparity between the images), maximum disparity may be too small (128.000000) or that exposure between left and right images is too different.
+```
+- If you see this error constantly and there is no longer a transform from `odom` to `base_link`, then it means the visual odometry has lost track and is unable to localize anymore. This usually happens when something entirely covers up the ZED cameras, and can be fixed by restarting the launch file. It’s okay for this error to show up once in a while, as long as the transform still exists.
