@@ -58,130 +58,12 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base:
-          Value: false
-        base_footprint:
-          Value: false
         base_link:
           Value: true
-        drive1:
-          Value: false
-        drive10:
-          Value: false
-        drive2:
-          Value: false
-        drive3:
-          Value: false
-        drive4:
-          Value: false
-        drive41:
-          Value: false
-        drive42:
-          Value: false
-        drive43:
-          Value: false
-        drive44:
-          Value: false
-        drive45:
-          Value: false
-        drive46:
-          Value: false
-        drive47:
-          Value: false
-        drive5:
-          Value: false
-        drive50:
-          Value: false
-        drive56:
-          Value: false
-        drive57:
-          Value: false
-        drive6:
-          Value: false
-        drive7:
-          Value: false
-        end_effector_left:
-          Value: false
-        end_effector_right:
-          Value: false
-        front_bumper_link:
-          Value: false
-        front_laser:
-          Value: false
-        front_left_wheel_link:
-          Value: false
-        front_lidar_mesh:
-          Value: false
-        front_right_wheel_link:
-          Value: false
-        hdt_michigan_root:
-          Value: false
-        imu_link:
-          Value: false
-        inertial_link:
-          Value: false
-        left_tool:
-          Value: false
-        leftforearm:
-          Value: false
-        leftgripper2_link:
-          Value: false
-        leftgripper_link:
-          Value: false
-        leftshoulder:
-          Value: false
-        lefttube:
-          Value: false
-        leftwrist:
-          Value: false
         map:
           Value: true
         odom:
           Value: true
-        pedestal_link:
-          Value: false
-        realsense:
-          Value: false
-        rear_bumper_link:
-          Value: false
-        rear_laser:
-          Value: false
-        rear_left_wheel_link:
-          Value: false
-        rear_lidar_mesh:
-          Value: false
-        rear_right_wheel_link:
-          Value: false
-        right_tool:
-          Value: false
-        rightforearm:
-          Value: false
-        rightgripper2_link:
-          Value: false
-        rightgripper_link:
-          Value: false
-        rightshoulder:
-          Value: false
-        righttube:
-          Value: false
-        rightwrist:
-          Value: false
-        robot_payload:
-          Value: false
-        robot_root:
-          Value: false
-        top_chassis_link:
-          Value: false
-        top_plate_front_link:
-          Value: false
-        top_plate_link:
-          Value: false
-        top_plate_rear_link:
-          Value: false
-        torso:
-          Value: false
-        user_rail_link:
-          Value: false
         zed2i_baro_link:
           Value: false
         zed2i_base_link:
@@ -216,110 +98,25 @@ Visualization Manager:
         map:
           odom:
             base_link:
-              base_footprint:
-                {}
-              front_bumper_link:
-                {}
-              front_laser:
-                {}
-              front_left_wheel_link:
-                {}
-              front_lidar_mesh:
-                {}
-              front_right_wheel_link:
-                {}
-              hdt_michigan_root:
-                base:
-                  pedestal_link:
-                    drive56:
-                      drive57:
-                        torso:
-                          drive1:
-                            drive2:
-                              rightshoulder:
-                                drive3:
-                                  righttube:
-                                    drive4:
-                                      rightforearm:
-                                        drive5:
-                                          drive6:
-                                            rightwrist:
-                                              drive7:
-                                                drive10:
-                                                  end_effector_right:
-                                                    right_tool:
-                                                      {}
-                                                    rightgripper2_link:
-                                                      {}
-                                                    rightgripper_link:
-                                                      {}
-                          drive41:
-                            drive42:
-                              leftshoulder:
-                                drive43:
-                                  lefttube:
-                                    drive44:
-                                      leftforearm:
-                                        drive45:
-                                          drive46:
-                                            leftwrist:
-                                              drive47:
-                                                drive50:
-                                                  end_effector_left:
-                                                    left_tool:
-                                                      {}
-                                                    leftgripper2_link:
-                                                      {}
-                                                    leftgripper_link:
-                                                      {}
-                          realsense:
-                            {}
-                zed_mount_link:
-                  zed2i_base_link:
-                    zed2i_camera_center:
-                      zed2i_baro_link:
+              zed_mount_link:
+                zed2i_base_link:
+                  zed2i_camera_center:
+                    zed2i_baro_link:
+                      {}
+                    zed2i_left_camera_frame:
+                      zed2i_imu_link:
                         {}
-                      zed2i_left_camera_frame:
-                        zed2i_imu_link:
-                          {}
-                        zed2i_left_camera_optical_frame:
-                          {}
-                        zed2i_temp_left_link:
-                          {}
-                      zed2i_mag_link:
+                      zed2i_left_camera_optical_frame:
                         {}
-                      zed2i_right_camera_frame:
-                        zed2i_right_camera_optical_frame:
-                          {}
-                        zed2i_temp_right_link:
-                          {}
-              imu_link:
-                {}
-              inertial_link:
-                {}
-              rear_bumper_link:
-                {}
-              rear_laser:
-                {}
-              rear_left_wheel_link:
-                {}
-              rear_lidar_mesh:
-                {}
-              rear_right_wheel_link:
-                {}
-              robot_payload:
-                {}
-              robot_root:
-                {}
-              top_chassis_link:
-                {}
-              top_plate_link:
-                top_plate_front_link:
-                  {}
-                top_plate_rear_link:
-                  {}
-              user_rail_link:
-                {}
+                      zed2i_temp_left_link:
+                        {}
+                    zed2i_mag_link:
+                      {}
+                    zed2i_right_camera_frame:
+                      zed2i_right_camera_optical_frame:
+                        {}
+                      zed2i_temp_right_link:
+                        {}
       Update Interval: 0
       Value: true
     - Class: rviz/Group
@@ -473,6 +270,21 @@ Visualization Manager:
           Unreliable: false
           Use Timestamp: false
           Value: true
+        - Alpha: 1
+          Class: rtabmap_ros/MapGraph
+          Enabled: true
+          Global loop closure: 255; 0; 0
+          Landmark: 0; 128; 0
+          Local loop closure: 255; 255; 0
+          Merged neighbor: 255; 170; 0
+          Name: Loop Closure Graph
+          Neighbor: 0; 0; 255
+          Queue Size: 10
+          Topic: /rtabmap/mapGraph
+          Unreliable: false
+          User: 255; 0; 0
+          Value: true
+          Virtual: 255; 0; 255
       Enabled: true
       Name: RTAB-Map
     - Class: rviz/Image
@@ -523,9 +335,9 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.7901251316070557
-        Y: -2.882793426513672
-        Z: -0.29665958881378174
+        X: 0.902376651763916
+        Y: 2.5232057571411133
+        Z: -0.8709843754768372
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
