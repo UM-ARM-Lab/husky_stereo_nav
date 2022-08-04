@@ -1,5 +1,6 @@
 # husky\_stereo\_nav
 
+## TODO: embed images properly
 This ROS Noetic package is intended as a visual SLAM navigation system for a [Clearpath Robotics Husky](https://clearpathrobotics.com/husky-unmanned-ground-vehicle-robot/) equipped with a ZED 2i stereo camera. RTAB-Map visual SLAM is used with the [ROS navigation stack](http://wiki.ros.org/navigation), allowing the husky to map and autonomously navigate. This package was designed for navigation around an outdoor garden bed.
 
 ## Installation
@@ -50,46 +51,57 @@ Because the ZED stereo camera requires a GPU to run, which the Husky onboard com
 - `.pgm` files: these are image files containing 2D static maps
 - `.yaml` files: these contain metadata associated with a certain `.pgm` file and are used to load static maps from, they should have the same name as the corresponding file
 
-## General workflow
+## General Usage
 
-- copy desired `.db` file to `~/.ros/rtabmap.db` so that RTAB-Map can access it during runtime
-    - When navigating on the roof, you should use the layered map we recorded since it works in a wide variety of lighting conditions: `cp husky_stereo_nav/maps/[TODO: rename map to something better] ~/.ros/rtabmap.db`
-    - 
+- copy desired `.db` file to `~/.ros/rtabmap.db`
+    - When navigating on the Wilson Center roof, you should use our layered master map, located in Big Narstie at `aliriley/maps/roof_master/roof_master.db`, this directory also contains the corresponding `.yaml` and `.pgm` files
+- copy the corresponding `.yaml` and `.pgm` files into `husky_stereo_nav/maps`
+- on line 11 of navigation.launch where the `static_map_path` arg is defined, change the path to the path of your `.yaml` map file
 - `roslaunch husky_stereo_nav navigation.launch`
-- wait 30 seconds to 1 minute for everything to start (you should see the 2D map and the robot footprint outline in RViz)
+- wait 30 seconds to 1 minute for everything to start (you should see the 2D map and the robot footprint outline appear in RViz)
 - manually drive the robot around until it has localized in the map
-- send desired navigation goals
+- send desired navigation goals using the 2D Nav Goal button in RViz
 
 ## Mapping
+Mapping consists of running SLAM while driving around a desired area in order to get three general properties:
 
-### TODO: update this based on new info about RTABMAP nodes
-Although we have created a combined map that seems to work consistently across all lighting conditions, if a new map is desired this is the procedure for making one:
+1. An accurate 3D (pointcloud) map of the environment
+2. An accurate 2D obstacle costmap of the environment
+3. A map where accurate loop closures can be detected frequently from anywhere in the map, meaning the robot can frequently correct its localization drift/error, even under a variety of different lighting conditions
 
-- `roslaunch husky_stereo_nav mapping.launch`
-- wait 30 seconds to 1 minute for everything to start (you should see the beginnings of a 2D map and a 3D map point cloud)
+It is relatively easy to make a map with the first two properties, but the third is much more difficult and requires a lot of care in the mapping procedure. Although we have already created a combined map that fulfills these properties to the best of our ability, if a new map is desired this is the procedure for making one:
+
 - be sure to drive the Husky in “slow” mode by holding down the left bumper and not the right one
-- As you drive, watch the progress of the both the 2D map and the 3D map point cloud
-- start driving around the desired area in a large loop, trying to get most of the boundaries in the map
-- Then drive to central areas to fill in gaps in the 2D map (clear areas are white, black areas are obstacles, and green areas are unfilled gaps)
-- once you have filled in most of your desired area on the map, you will probably have a few false obstacles and malformed shapes
+- As you drive, watch the progress of the both the 2D map and the 3D map point cloud, as well as the loop closure graph
+- To ensure frequent localization, it is important that maps have accurate and widespread loop closures. Loop closures are visualized in rviz in the loop closure graph by red and yellow lines connecting RTAB-Map nodes, while blue lines represent connection through odometry. When mapping, ensure that loop closures are being found frequently and between nodes throughout the entire map. Loop closures are found by revisiting previously explored areas of the map in the same orientation. Revisit areas from different orientations if they are not getting any loop closures.
+- Here is an example map with reasonably good node coverage of the map and a good amount of loop closures:
+    
+    ![Screenshot from 2022-08-03 10-46-46.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/503af9d4-8bec-4bd8-93fa-5676089b190c/Screenshot_from_2022-08-03_10-46-46.png)
+    
+- When navigating on the roof using waypoints (see series of waypoints below), the location of the predetermined waypoints are relative to the origin of the map. Thus if you want to use the same set of waypoints with multiple map files, the map origins will need to be in the same place. On the bottom right corner of the roof, there are three pieces of tape serving as alignment markers. To begin mapping in the same location, align the three 3D printed alignment sticks located on the Husky’s bumpers with the x marks on the tape alignment markers. Repeating this process prior to mapping will ensure that the maps will have origins in the same place relative to the roof.
+
+![20220803_162342(1).jpg](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d85103a9-2897-402f-8b5d-4f65573f1bb4/20220803_162342(1).jpg)
+
+- To begin mapping, run `roslaunch husky_stereo_nav mapping.launch`
+- wait 30 seconds to 1 minute for everything to start and for the camera exposure to adjust correctly (you should see the beginnings of a 2D map and a 3D map point cloud)
+- start driving around the desired area in a large loop, trying to get most of the boundaries in the map, and returning to the start to get a loop closure
+- then drive in a few other loops around the area, making sure to loop in both directions. This is to provide some initial locations where loop closures can be detected, which will be useful for the rest of the mapping process
+- Next, drive back and forth across the area in a “lawn mower” pattern, making passes 1-2 ft apart. this will provide good node coverage across the entire map
+- It is especially important to get good coverage of areas in the map where the robot’s vision will be obscured, such as the area around the garden in our case. Make sure to drive around these areas several times, frequently stopping to rotate in place in order to make a variety of perspectives of the area available for loop closure detection
+- Once you have good loop closure graph coverage of the area, you can drive to any areas of the map that weren’t filled in (green pixels on the 2D map)
+- once you have filled in your desired area on the map, you might have a few false obstacles and malformed shapes. If so, do this to fix them:
     - in RViz, hide the 3D map point cloud so you can better see the projected 2D map
-    - drive to these locations such that the features are in view of the camera,
+    - drive to these locations such that the features are in view of the camera
     - to fix false obstacles (obstacles that exist in the map but not in real life), let the robot sit with the area in frame for a few seconds. If they don’t clear up, try to view them from a different perspective and do the same
     - to fix a malformed feature, drive slowly around the feature and let the robot sit for a few seconds at a variety of different perspectives
     - use the 2D map as feedback, once the problems disappear in the map you can move on
-- While mapping, you may sometimes see features of the map drifting off incorrectly
+- While mapping, you may sometimes see features of the map drifting off incorrectly, like this:
     
-    ![Screenshot from 2022-08-03 11-03-47.png](Screenshot_from_2022-08-03_11-03-47.png)
+    ![Screenshot from 2022-08-03 11-03-47.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/ef31db15-4d5e-42b4-9f05-c0f4b2763342/Screenshot_from_2022-08-03_11-03-47.png)
     
     - This likely means the odometry has drifted, and can usually be fixed by finding a loop closure
     - so drive back to a previously visited pose and try to follow that previous path until the map corrects itself
     - If it doesn’t correct itself, you will have to restart the mapping process
-- When navigating on the roof using waypoints (see series of waypoints below), the location of the predetermined waypoints are relative to the origin of the map. Thus if you want to use the same set of waypoints with multiple map files, the map origins will need to be in the same place. On the bottom right corner of the roof, there are three pieces of tape serving as alignment markers. To begin mapping in the same location, align the three 3D printed alignment sticks located on the Husky’s bumpers with the x marks on the tape alignment markers. Repeating this process prior to mapping will ensure that the maps will have origins in the same place relative to the roof.
-- TODO: insert picture
-- To ensure frequent localization, it is important that maps have accurate and widespread loop closures. Loop closures are visualized in rviz by red lines connecting blue RTAB-Map nodes. When mapping, ensure that loop closures are being found between nodes throughout the entire map. Revisit areas from different orientations if they are not getting any loop closures.
-
-![Screenshot from 2022-08-03 10-46-46.png](Screenshot_from_2022-08-03_10-46-46.png)
-
 - When the map is complete, we recommend driving the husky back to the map origin located at the tape alignment markers. This way you can check how close the robot base_link is to the map pose and thus get an estimate for how accurate the map is as a whole.
 - After mapping is complete, you need to save both the 2D map and 3D map:
     - `roscd husky_stereo_nav/maps`
@@ -141,8 +153,7 @@ Although we have created a combined map that seems to work consistently across a
                 "z": 0.0,
                 "w": 1.0
             }
-        },
-    		...
+        }
     ]
     ```
     
