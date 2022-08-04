@@ -1,6 +1,5 @@
 # husky\_stereo\_nav
 
-## TODO: embed images properly
 This ROS Noetic package is intended as a visual SLAM navigation system for a [Clearpath Robotics Husky](https://clearpathrobotics.com/husky-unmanned-ground-vehicle-robot/) equipped with a ZED 2i stereo camera. RTAB-Map visual SLAM is used with the [ROS navigation stack](http://wiki.ros.org/navigation), allowing the husky to map and autonomously navigate. This package was designed for navigation around an outdoor garden bed.
 
 ## Installation
@@ -204,3 +203,6 @@ odometry: Could not get transform from base_link to zed2i_left_camera_optical_fr
 computeCorrespondences() A large number (320/320) of stereo correspondences are rejected! Optical flow may have failed because images are not calibrated, the background is too far (no disparity between the images), maximum disparity may be too small (128.000000) or that exposure between left and right images is too different.
 ```
 - If you see this error constantly and there is no longer a transform from `odom` to `base_link`, then it means the visual odometry has lost track and is unable to localize anymore. This usually happens when something entirely covers up the ZED cameras, and can be fixed by restarting the launch file. It’s okay for this error to show up once in a while, as long as the transform still exists.
+
+## Design Process and Further Documentation
+Additional documentation can be found [here](https://github.com/UM-ARM-Lab/husky_stereo_nav/blob/master/docs/design_process.md).
