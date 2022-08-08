@@ -1,0 +1,7 @@
+image: bad_map_with_drift.pgm
+resolution: 0.050000
+origin: [-7.182115, -4.902452, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+

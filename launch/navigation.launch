@@ -8,7 +8,7 @@
 
     <arg name="zed_frame" default="zed_mount_link" />
     <arg name="base_frame" default="base_link" />
-    <arg name="static_map_path" default="$(find husky_stereo_nav)/maps/lab_filtered_new.yaml" />
+    <arg name="static_map_path" default="$(find husky_stereo_nav)/maps/roof_master/roof_master.yaml" />
     <arg name="rviz_config_path" default="$(find husky_stereo_nav)/rviz/navigation.rviz" />
     <arg name="nav_config_path" value="$(find husky_stereo_nav)/config/navigation" />
 
