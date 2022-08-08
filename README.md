@@ -1,6 +1,6 @@
 # husky\_stereo\_nav
 
-This ROS Noetic package is intended as a visual SLAM navigation system for a [Clearpath Robotics Husky](https://clearpathrobotics.com/husky-unmanned-ground-vehicle-robot/) equipped with a ZED 2i stereo camera. RTAB-Map visual SLAM is used with the [ROS navigation stack](http://wiki.ros.org/navigation), allowing the husky to map and autonomously navigate. This package was designed for navigation around an outdoor garden bed.
+This ROS Noetic package is intended as a visual SLAM navigation system for a [Clearpath Robotics Husky](https://clearpathrobotics.com/husky-unmanned-ground-vehicle-robot/) equipped with a ZED 2i stereo camera. RTAB-Map visual SLAM is used with the [ROS navigation stack](http://wiki.ros.org/navigation/Tutorials), allowing the husky to map and autonomously navigate. This package was designed for navigation around an outdoor garden bed.
 
 ## Installation
 
@@ -17,7 +17,7 @@ catkin init
 Next, you need to clone the husky_stereo_nav repository into your catkin_ws:
 ```bash
 cd catkin_ws/src
-git clone [TODO: insert final repo link]
+git clone https://github.com/UM-ARM-Lab/husky_stereo_nav.git
 ```
 Before you can run husky_stereo_nav, you need to install several ZED dependencies. 
 Follow [this tutorial](https://www.stereolabs.com/docs/installation/linux/) to install the ZED SDK,
@@ -62,6 +62,9 @@ Because the ZED stereo camera requires a GPU to run, which the Husky onboard com
 - send desired navigation goals using the 2D Nav Goal button in RViz
 
 ## Mapping
+
+- To begin mapping, run `roslaunch husky_stereo_nav mapping.launch`
+
 Mapping consists of running SLAM while driving around a desired area in order to get three general properties:
 
 1. An accurate 3D (pointcloud) map of the environment
@@ -71,9 +74,10 @@ Mapping consists of running SLAM while driving around a desired area in order to
 It is relatively easy to make a map with the first two properties, but the third is much more difficult and requires a lot of care in the mapping procedure. Although we have already created a combined map that fulfills these properties to the best of our ability, if a new map is desired this is the procedure for making one:
 
 - be sure to drive the Husky in “slow” mode by holding down the left bumper and not the right one
+- The ZED camera has a minimum distance of about 0.5 meters. When mapping features close to the camera, it will often perform unreliably, either falsely gauging obstacle distance or not seeing them at all. To avoid this, try to keep the camera at least a meter away from all obstacles.
 - As you drive, watch the progress of the both the 2D map and the 3D map point cloud, as well as the loop closure graph
-- To ensure frequent localization, it is important that maps have accurate and widespread loop closures. Loop closures are visualized in rviz in the loop closure graph by red and yellow lines connecting RTAB-Map nodes, while blue lines represent connection through odometry. When mapping, ensure that loop closures are being found frequently and between nodes throughout the entire map. Loop closures are found by revisiting previously explored areas of the map in the same orientation. Revisit areas from different orientations if they are not getting any loop closures.
-- Here is an example map with reasonably good node coverage of the map and a good amount of loop closures:
+- To ensure frequent localization, it is important that maps have accurate and widespread loop closures. Loop closures are visualized in rviz in the loop closure graph by red and yellow lines connecting RTAB-Map nodes, while blue lines represent connection through odometry. When mapping, ensure that loop closures are being found frequently and between nodes throughout the entire map. Loop closures are found by revisiting previously explored areas of the map. If an area is not getting any loop closures, revisit this location from different orientations.
+- Here is an example map with reasonably good node coverage and a good amount of loop closures:
     
     ![](https://github.com/UM-ARM-Lab/husky_stereo_nav/blob/master/docs/images/good_loop_closures_map.png?raw=true)
     
@@ -81,7 +85,8 @@ It is relatively easy to make a map with the first two properties, but the third
 
 ![](https://github.com/UM-ARM-Lab/husky_stereo_nav/blob/master/docs/images/roof_tape_markers.jpg?raw=true)
 
-- To begin mapping, run `roslaunch husky_stereo_nav mapping.launch`
+The general order of operations when mapping is as follows:
+
 - wait 30 seconds to 1 minute for everything to start and for the camera exposure to adjust correctly (you should see the beginnings of a 2D map and a 3D map point cloud)
 - start driving around the desired area in a large loop, trying to get most of the boundaries in the map, and returning to the start to get a loop closure
 - then drive in a few other loops around the area, making sure to loop in both directions. This is to provide some initial locations where loop closures can be detected, which will be useful for the rest of the mapping process
@@ -111,10 +116,17 @@ It is relatively easy to make a map with the first two properties, but the third
     - now there should be `<name>.db`, `<name>.pgm`, and `<name>.yaml` all in the `husky_stereo_nav/maps` folder
 - When the Husky is intended to navigate in variable lighting conditions, it is recommended to generate one more robust `.db` file by combining multiple `.db` files recorded under different lighting conditions. For example, record a map of the environment on a sunny morning and a cloudy afternoon. To combine these maps together, run in your terminal:
 ```bash
-rtabmap-reprocess "<path_to_first_map.db>;<path_to_second_map.db>; ..." <name_of_combined_map.db>”
+rtabmap-reprocess "<path_to_first_map.db>;<path_to_second_map.db>; ..." <name_of_combined_map.db>
+```
+- To view previously created `.db` files, use the rtabmap-databaseViewer tool which allows you to view the 3D point cloud, loop closures, and other useful information about the map. Run in your terminal:
+```bash
+rtabmap-databaseViewer <your_map.db>
 ```
 
 ## Navigating
+
+- To begin navigation, run `roslaunch husky_stereo_nav navigation.launch`.
+- In the event that the husky must be stopped while navigating, use the handheld e-stop. Following the use of the e-stop, the navigation launch file must be restarted and the e-stop reenabled for the husky to begin navigating again. So long as the e-stop is not in triggered mode, the remote controller should work. You should not need to restart the husky following the use of the e-stop.
 
 ### Localizing
 
@@ -203,6 +215,7 @@ odometry: Could not get transform from base_link to zed2i_left_camera_optical_fr
 computeCorrespondences() A large number (320/320) of stereo correspondences are rejected! Optical flow may have failed because images are not calibrated, the background is too far (no disparity between the images), maximum disparity may be too small (128.000000) or that exposure between left and right images is too different.
 ```
 - If you see this error constantly and there is no longer a transform from `odom` to `base_link`, then it means the visual odometry has lost track and is unable to localize anymore. This usually happens when something entirely covers up the ZED cameras, and can be fixed by restarting the launch file. It’s okay for this error to show up once in a while, as long as the transform still exists.
+- Also remember that due to the ZED camera's minimum distance restriction, it will not perform well when too close to obstacles. This could cause lost correspondences as well as unpredictable live obstacle detection behavior in the local costmap.
 
 ## Design Process and Further Documentation
 Additional documentation can be found [here](https://github.com/UM-ARM-Lab/husky_stereo_nav/blob/master/docs/design_process.md).
