@@ -1,6 +1,5 @@
 # husky\_stereo\_nav
 
-## TODO: embed images properly
 This ROS Noetic package is intended as a visual SLAM navigation system for a [Clearpath Robotics Husky](https://clearpathrobotics.com/husky-unmanned-ground-vehicle-robot/) equipped with a ZED 2i stereo camera. RTAB-Map visual SLAM is used with the [ROS navigation stack](http://wiki.ros.org/navigation), allowing the husky to map and autonomously navigate. This package was designed for navigation around an outdoor garden bed.
 
 ## Installation
@@ -76,11 +75,11 @@ It is relatively easy to make a map with the first two properties, but the third
 - To ensure frequent localization, it is important that maps have accurate and widespread loop closures. Loop closures are visualized in rviz in the loop closure graph by red and yellow lines connecting RTAB-Map nodes, while blue lines represent connection through odometry. When mapping, ensure that loop closures are being found frequently and between nodes throughout the entire map. Loop closures are found by revisiting previously explored areas of the map in the same orientation. Revisit areas from different orientations if they are not getting any loop closures.
 - Here is an example map with reasonably good node coverage of the map and a good amount of loop closures:
     
-    ![Screenshot from 2022-08-03 10-46-46.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/503af9d4-8bec-4bd8-93fa-5676089b190c/Screenshot_from_2022-08-03_10-46-46.png)
+    ![](https://github.com/UM-ARM-Lab/husky_stereo_nav/blob/master/docs/images/good_loop_closures_map.png?raw=true)
     
 - When navigating on the roof using waypoints (see series of waypoints below), the location of the predetermined waypoints are relative to the origin of the map. Thus if you want to use the same set of waypoints with multiple map files, the map origins will need to be in the same place. On the bottom right corner of the roof, there are three pieces of tape serving as alignment markers. To begin mapping in the same location, align the three 3D printed alignment sticks located on the Husky’s bumpers with the x marks on the tape alignment markers. Repeating this process prior to mapping will ensure that the maps will have origins in the same place relative to the roof.
 
-![20220803_162342(1).jpg](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d85103a9-2897-402f-8b5d-4f65573f1bb4/20220803_162342(1).jpg)
+![](https://github.com/UM-ARM-Lab/husky_stereo_nav/blob/master/docs/images/roof_tape_markers.jpg?raw=true)
 
 - To begin mapping, run `roslaunch husky_stereo_nav mapping.launch`
 - wait 30 seconds to 1 minute for everything to start and for the camera exposure to adjust correctly (you should see the beginnings of a 2D map and a 3D map point cloud)
@@ -97,7 +96,7 @@ It is relatively easy to make a map with the first two properties, but the third
     - use the 2D map as feedback, once the problems disappear in the map you can move on
 - While mapping, you may sometimes see features of the map drifting off incorrectly, like this:
     
-    ![Screenshot from 2022-08-03 11-03-47.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/ef31db15-4d5e-42b4-9f05-c0f4b2763342/Screenshot_from_2022-08-03_11-03-47.png)
+    ![](https://github.com/UM-ARM-Lab/husky_stereo_nav/blob/master/docs/images/bad_odom_map.png)
     
     - This likely means the odometry has drifted, and can usually be fixed by finding a loop closure
     - so drive back to a previously visited pose and try to follow that previous path until the map corrects itself
@@ -204,3 +203,6 @@ odometry: Could not get transform from base_link to zed2i_left_camera_optical_fr
 computeCorrespondences() A large number (320/320) of stereo correspondences are rejected! Optical flow may have failed because images are not calibrated, the background is too far (no disparity between the images), maximum disparity may be too small (128.000000) or that exposure between left and right images is too different.
 ```
 - If you see this error constantly and there is no longer a transform from `odom` to `base_link`, then it means the visual odometry has lost track and is unable to localize anymore. This usually happens when something entirely covers up the ZED cameras, and can be fixed by restarting the launch file. It’s okay for this error to show up once in a while, as long as the transform still exists.
+
+## Design Process and Further Documentation
+Additional documentation can be found [here](https://github.com/UM-ARM-Lab/husky_stereo_nav/blob/master/docs/design_process.md).
