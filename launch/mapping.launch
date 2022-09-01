@@ -9,6 +9,8 @@
     <arg name="zed_frame" default="zed_mount_link" />
     <arg name="rviz_config_path" default="$(find husky_stereo_nav)/rviz/mapping.rviz" />
 
+    <arg name="base_frame" default="base_footprint2" />
+
     <group ns="zed2i">
         <!-- ZED wrapper node -->
         <node name="zed_node" pkg="zed_wrapper" type="zed_wrapper_node" output="screen" required="true">
@@ -17,6 +19,10 @@
 
             <param name="general/base_frame" value="$(arg zed_frame)" />
         </node>
+
+        <!-- static TF publisher for base_footprint -->
+        <node pkg="tf" type="static_transform_publisher" name="base_footprint_publisher" 
+              args="0 0 0.13228 0 0 0 base_footprint2 base_link 100" />
 
         <!-- static TF publisher for ZED mount -->
         <node pkg="tf" type="static_transform_publisher" name="zed_mount_link_publisher" 
@@ -44,7 +50,7 @@
         <remap from="right/camera_info" to="$(arg right_camera_info)" />
         <remap from="odom" to="/odometry" />
         
-        <param name="frame_id" type="string" value="base_link" />
+        <param name="frame_id" type="string" value="$(arg base_frame)" />
         <param name="odom_frame_id" type="string" value="odom" />
 
         <!-- params controlling how strict odometry is about accepting correspondences,
@@ -65,7 +71,7 @@
         <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen"
               args="--delete_db_on_start" launch-prefix="bash -c 'sleep 20; $0 $@'">
 
-            <param name="frame_id" type="string" value="base_link" />
+            <param name="frame_id" type="string" value="$(arg base_frame)" />
 
             <!-- subscribe to stereo images as the input source -->
             <param name="subscribe_stereo" type="bool" value="true" />
@@ -91,11 +97,13 @@
             
             <!-- only use this height range for projecting the 2D grid_map -->
             <param name="Grid/MaxObstacleHeight" type="string" value="1" />
-            <param name="Grid/MaxGroundHeight" type="string" value="0.02" />
+            <param name="Grid/MaxGroundHeight" type="string" value="-0.2"/>
 
             <!-- apply filtering min neighbors filtering to 3D map pointcloud before projecting the 2D grid_map -->
-            <param name="Grid/NoiseFilteringRadius" type="string" value="0.4" />
-            <param name="Grid/NoiseFilteringMinNeighbors" type="string" value="10" />
+            <!-- <param name="Grid/NoiseFilteringRadius" type="string" value="0.4" /> -->
+            <!-- <param name="Grid/NoiseFilteringMinNeighbors" type="string" value="10" /> -->
+            <!-- <param name="Grid/PreVoxelFiltering" type="string" value="false" /> -->
+            <param name="Grid/CellSize" type="string" value="0.01" />
 
             <!-- restrict pose of robot to 3 degrees of freedom (x, y, theta), i.e a 2D plane -->
             <param name="Reg/Force3DoF" value="true"/>
