@@ -97,13 +97,15 @@
             
             <!-- only use this height range for projecting the 2D grid_map -->
             <param name="Grid/MaxObstacleHeight" type="string" value="1" />
-            <param name="Grid/MaxGroundHeight" type="string" value="-0.2"/>
-
+            <param name="Grid/MaxGroundHeight" type="string" value="0.007"/>
+            <param name="Grid/NormalsSegmentation" type="string" value="false"/>
+            <param name="Grid/MaxGroundAngle" type="string" value="45"/>/
             <!-- apply filtering min neighbors filtering to 3D map pointcloud before projecting the 2D grid_map -->
-            <!-- <param name="Grid/NoiseFilteringRadius" type="string" value="0.4" /> -->
-            <!-- <param name="Grid/NoiseFilteringMinNeighbors" type="string" value="10" /> -->
+            <!-- apply filtering min neighbors filtering to 3D map pointcloud before projecting the 2D grid_map -->
+            <param name="Grid/NoiseFilteringRadius" type="string" value="0.4" />
+            <param name="Grid/NoiseFilteringMinNeighbors" type="string" value="10" />
             <!-- <param name="Grid/PreVoxelFiltering" type="string" value="false" /> -->
-            <param name="Grid/CellSize" type="string" value="0.01" />
+            <param name="Grid/CellSize" type="string" value="0.02" />
 
             <!-- restrict pose of robot to 3 degrees of freedom (x, y, theta), i.e a 2D plane -->
             <param name="Reg/Force3DoF" value="true"/>
