@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rospy
 import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import PointCloud2
@@ -47,6 +49,7 @@ class RGBFilter:
 
         outlier_cloud = array_to_pointcloud2(outlier_array, msg.header.stamp, msg.header.frame_id)
         self.pc_pub.publish(outlier_cloud)
+
 
 
 def main():
