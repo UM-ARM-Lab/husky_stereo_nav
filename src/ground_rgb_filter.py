@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
+from turtle import stamp
 import rospy
 import sensor_msgs.point_cloud2 as pc2
-from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import PointCloud2, PointField
+from std_msgs.msg import Header
 import numpy as np
 from color_utils import float_to_rgb
 from ros_numpy.point_cloud2 import array_to_pointcloud2
 
-COLOR_THRESHOLD = 20
+COLOR_THRESHOLD = 50
 
 class RGBFilter:
     pc_pub: rospy.Publisher
@@ -16,6 +18,7 @@ class RGBFilter:
         rospy.Subscriber("rtabmap/cloud_ground", PointCloud2, self.ground_cloud_callback)
         self.pc_pub = rospy.Publisher("filtered_ground", PointCloud2)
 
+    @staticmethod
     def get_avg_color(colors: np.ndarray) -> np.ndarray:
         return np.mean(colors, axis=0)
     
@@ -26,6 +29,9 @@ class RGBFilter:
         
         # read pointcloud from ROS message into a numpy array
         cloud_array = np.array(list(pc2.read_points(msg, skip_nans=True)))
+        print(cloud_array)
+        print(msg.fields)
+        print(cloud_array.dtype)
 
         # extract the [x, y, z] points from the pointcloud
         # nx3 array
@@ -46,8 +52,11 @@ class RGBFilter:
 
         # select the outliers from the original pointcloud array
         outlier_array = cloud_array[outlier_ids, :]
+        print(outlier_array)
 
-        outlier_cloud = array_to_pointcloud2(outlier_array, msg.header.stamp, msg.header.frame_id)
+        # outlier_cloud = array_to_pointcloud2(outlier_array, msg.header.stamp, msg.header.frame_id)
+        outlier_cloud = pc2.create_cloud(msg.header, msg.fields, outlier_array)
+        print("publishing cloud")
         self.pc_pub.publish(outlier_cloud)
 
 
@@ -55,6 +64,8 @@ class RGBFilter:
 def main():
     rospy.init_node("rgb_filter")
     filter = RGBFilter()
+
+    rospy.spin()
     
 if __name__ == "__main__":
     main()
