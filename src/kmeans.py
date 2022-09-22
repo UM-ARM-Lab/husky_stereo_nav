@@ -25,6 +25,7 @@ def pc_callback(ground_cloud):
     rospy.logwarn(labels);
     points1 = kmeans.labels_
 
+    pc2.create_cloud(sensor_msgs.msg.header, )
     
 
 
