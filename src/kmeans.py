@@ -14,19 +14,25 @@ class KMeans:
 
     def pc_callback(self, msg: PointCloud2):
         points = np.array(list(pc2.read_points(msg, skip_nans=True)))
+        # print(points)
         rgb = np.vstack(float_to_rgb(intensity) for intensity in points[:, 3])
-        points = np.hstack((points[:,[0,1,2]], rgb))
+        rgb_points = np.hstack((points[:,:3], rgb))
+        # print(points)
         #rospy.logwarn(points);
+        print(f"points before: {points}\n\n")
         kmeans = sklearn.cluster.KMeans(n_clusters=2, random_state=0).fit(points)
-        #rospy.logwarn(points)
+        print(f"points: {points}\n\n")
         labels = kmeans.predict(points)
-        outlier_ids = np.nonzero(labels == 1)
+        print(f"labels: {labels}\n\n")
+        outlier_ids = np.nonzero(labels == 1)[0]
+        print(f"outlier IDs: {outlier_ids}\n\n")
+        #rospy.logwarn(outlier_ids)
         outliers = points[outlier_ids, :]
+        print(f"outliers: {outliers}\n\n");
         # kmeans.labels_;
-        rospy.logwarn(labels)
-        points1 = kmeans.labels_
-        pc2.create_cloud(msg.header, msg.fields, outliers)
-        self.cloud_pub.publish(outliers)
+        #rospy.logwarn(labels)
+        kmeans_cloud = pc2.create_cloud(msg.header, msg.fields, outliers)
+        self.cloud_pub.publish(kmeans_cloud)
 
 def main():
     rospy.init_node("kmeans_filter")
