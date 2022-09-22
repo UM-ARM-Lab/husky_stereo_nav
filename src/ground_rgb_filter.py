@@ -8,7 +8,7 @@ from color_utils import float_to_rgb
 import tf2_ros
 import sklearn.cluster
 
-COLOR_THRESHOLD = 50
+COLOR_THRESHOLD = 65
 
 class RGBFilter:
     pc_pub: rospy.Publisher
@@ -24,18 +24,21 @@ class RGBFilter:
     def get_avg_color(colors: np.ndarray) -> np.ndarray:
         return np.mean(colors, axis=0)
     
+    @staticmethod
     def get_dominant_color(colors: np.ndarray) -> np.ndarray:
         """
         :param colors: nx3 numpy array containing RGB values for each point in the pointcloud
         """
 
-        kmeans = sklearn.cluster.KMeans(n_clusters=2, random_state=0).fit_predict(colors)
+        kmeans = sklearn.cluster.KMeans(n_clusters=2, random_state=0).fit(colors)
         dominant_colors = kmeans.cluster_centers_
         print(f"dominant_colors array: {dominant_colors}")
         for color in dominant_colors:
             r, g, b = color
             print(f"({r}, {g}, {b})")
-        labeled_colors = kmeans.labels_
+        labeled_colors = kmeans.predict(colors)
+        # (108, 95, 79)
+        # (64, 56, 50)
 
         # TODO: make this code better, no hardcoded cluster num
         if np.count_nonzero(labeled_colors == 0) >= np.count_nonzero(labeled_colors == 1):
