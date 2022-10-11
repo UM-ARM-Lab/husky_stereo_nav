@@ -4,14 +4,11 @@ from turtle import color
 from matplotlib.colors import rgb_to_hsv
 from color_utils import float_to_rgb
 import rospy
-import numpy as np
+import numpy as np, cv2
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs.point_cloud2 as pc2
 import sklearn.cluster
 import colorsys
-
-RGB_SCALE = 1/255;
-HSV_SCALE = 1/800;
 
 class KMeans:
     #cloud_pub: rospy.Publisher
@@ -21,10 +18,14 @@ class KMeans:
         self.cloud_pub1 = rospy.Publisher("/kmeans_hsv_filtered", PointCloud2, queue_size=1)
 
     def pc_callback(self, msg: PointCloud2):
-        print(f"frame: {msg.header.frame_id}\n\n")
-        hsv_cloud = publish_hsv_filter(msg)
-        #self.cloud_pub0.publish(rgb_cloud)
-        self.cloud_pub1.publish(hsv_cloud)
+        points = np.array(list(pc2.read_points(msg, skip_nans=True)))
+        rgb = np.vstack(float_to_rgb(intensity) for intensity in points[:, 3])
+        gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
+        thresh = cv2.adaptiveThreshold(thresh, 255, cv2.ADAPTIVE_THRESH_GUASSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        thresh_color = cv2.cvtColor(gray,cv2.COLOR_GRAY2RGB)
+        thresh_cloud = pc2.create_cloud(msg.header, msg.fields, thresh_color)
+        self.cloud_pub0.publish(thresh_cloud)
+
 
 def convertToHSV(rgb):
     hsv = np.array(rgb, copy=True)
