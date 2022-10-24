@@ -49,14 +49,14 @@ class Generator:
 
     def publish_fake_pointcloud(self):
         # read in image with opencv
-        img = cv2.imread("fake_hose1_small.png")
+        img = cv2.imread("white_red.png")
         # print(img)
         pc_msg = Generator.image_to_pointcloud(img)
         self.cloud_pub.publish(pc_msg)
 
 
 def main():
-    rospy.init_node("kmeans_filter")
+    rospy.init_node("pointcloud_generator")
     r = rospy.Rate(10)
     filter = Generator()
     while not rospy.is_shutdown():

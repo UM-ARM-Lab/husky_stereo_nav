@@ -1,0 +1,8 @@
+<launch>
+    <arg name="rviz_config_path" default="$(find husky_stereo_nav)/rviz/filter_test.rviz" />
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_config_path)" />
+    <!-- <node pkg="husky_stereo_nav" type="pointcloud_gen.py" name="pointcloud_generator" /> -->
+    <node pkg="husky_stereo_nav" type="colorspace_visualizer.py" name="visualizer" />
+    <!-- <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" /> -->
+</launch>
