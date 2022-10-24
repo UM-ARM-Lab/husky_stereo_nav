@@ -2,3 +2,6 @@
 *.db
 *.pgm
 maps/*.yaml
+bags/*
+*.ipynb_checkpoints/
+*/__pycache__
