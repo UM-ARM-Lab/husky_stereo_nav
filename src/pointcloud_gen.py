@@ -49,7 +49,7 @@ class Generator:
 
     def publish_fake_pointcloud(self):
         # read in image with opencv
-        img = cv2.imread("white_red.png")
+        img = cv2.imread("data/white_red.png")
         # print(img)
         pc_msg = Generator.image_to_pointcloud(img)
         self.cloud_pub.publish(pc_msg)

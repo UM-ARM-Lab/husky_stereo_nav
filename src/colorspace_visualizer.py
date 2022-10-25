@@ -19,18 +19,23 @@ class Visualizer:
         # rospy.Subscriber("rtabmap/cloud_ground", PointCloud2, self.pc_callback)
         self.num_publishers = 3
         self.pc_pubs = [rospy.Publisher(f"filtered_pc{i}", PointCloud2, queue_size=1) for i in range(self.num_publishers)]
-        self.visualize_pc_frame("zed_pc_frame1.txt")
+        self.visualize_pc_frame("data/zed_pc_frame1.txt")
+        # self.visualize_pc_frame("data/fake_pc_frame1.txt")
     
     def visualize_pc_frame(self, pc_frame: str):
         points = np.loadtxt(pc_frame)
         points = points[points[:, 0] != np.inf]
+        colors = points[:, 3:]
 
-        # self.fig = plt.figure()
-        # self.plot_rgb_space(points[:, 3:])
+        self.fig = plt.figure()
+        self.plot_rgb_space(colors, colors, r=1, c=2, i=1)
         # self.plot_xyz_space(points[:, :3], color_points=points[:, 3:])
         # self.plot_kmeans(points[:, 3:])
-        # plt.show()
-        self.publish_kmeans(points)
+        
+        distances = self.color_distance_grouping(colors)
+        self.plot_rgb_space(colors, distances, r=1, c=2, i=2)
+        plt.show()
+        # self.publish_kmeans(points)
         
 
     def pc_callback(self, msg):
@@ -56,15 +61,16 @@ class Visualizer:
         # axs[2].set_ylabel("Frequency")
         axs[2].set_xlabel("Blue Intensity")
 
-    def plot_rgb_space(self, points):
+    def plot_rgb_space(self, points, colors, r=1, c=1, i=1):
         # Nx3 array of [r, g, b]
         # rgb_points = points[:, 3:]
-        ax = self.fig.add_subplot(projection="3d")
+        ax = self.fig.add_subplot(r, c, i, projection="3d")
         ax.clear()
-        ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=points, marker="x")
+        sc = ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=colors,  cmap="plasma", marker="x")
         ax.set_xlabel("Red")
         ax.set_ylabel("Green")
         ax.set_zlabel("Blue")
+        plt.colorbar(sc, label="color distance")
         # plt.pause(0.05)
     
     def kmeans(self, points: np.ndarray, n_clusters: int) -> np.ndarray:
@@ -122,8 +128,35 @@ class Visualizer:
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.set_zlabel("Z")
-        
-            
+         
+    def get_avg_color(self, colors: np.ndarray) -> np.ndarray:
+        return np.mean(colors, axis=0)
+    
+    def get_dominant_color(self, colors: np.ndarray, n_clusters) -> np.ndarray:
+        """
+        :param colors: nx3 numpy array containing RGB values for each point in the pointcloud
+        """
+
+        kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(colors)
+        dominant_colors = kmeans.cluster_centers_
+        print(f"dominant_colors array: {dominant_colors}")
+        for color in dominant_colors:
+            r, g, b = color
+            print(f"({r}, {g}, {b})")
+        labeled_colors = kmeans.predict(colors)
+        # (108, 95, 79)
+        # (64, 56, 50)
+
+        # TODO: make this code better, no hardcoded cluster num
+        if np.count_nonzero(labeled_colors == 0) >= np.count_nonzero(labeled_colors == 1):
+            return dominant_colors[0]
+        return dominant_colors[1]
+
+    def color_distance_grouping(self, colors):
+        floor_color = self.get_dominant_color(colors, n_clusters=2)
+        color_distances = np.linalg.norm(colors - floor_color, axis=1)
+        return color_distances
+    
         
 def main():
     rospy.init_node("colorspace_visualizer")

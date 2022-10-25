@@ -15,7 +15,8 @@ import cv2
 class Otsus:
     #cloud_pub: rospy.Publisher
     def __init__(self):
-        rospy.Subscriber("/rtabmap/cloud_ground", PointCloud2, self.pc_callback)
+        rospy.Subscriber("fake_hose_cloud", PointCloud2, self.pc_callback)
+        # rospy.Subscriber("/rtabmap/cloud_ground", PointCloud2, self.pc_callback)
         # rospy.Subscriber("/zed2i/zed_node/point_cloud/cloud_registered", PointCloud2, self.pc_callback)
         self.cloud_pub1 = rospy.Publisher("/cloud_ground_hue", PointCloud2, queue_size=10)
         # self.cloud_pub2 = rospy.Publisher("/zed_hue", PointCloud2, queue_size=10)
@@ -40,10 +41,10 @@ class Otsus:
         # normalize z height to [0, 1]
         # plt.plot(z)
         # plt.show()
+        # z /= np.max(z)
         z[z < -0.25] = -0.25
         z[z > -0.05] = -0.05
         z -= np.min(z)
-        z /= np.max(z)
         # plt.plot(z)
         # plt.show()
         # print(float_rgb[:, 0].size)
@@ -56,8 +57,8 @@ class Otsus:
         # cost_fields = float_rgb[:, 0]
 
         # compute the norm to get single value cost for each point
-        costs = np.linalg.norm(cost_fields*cost_weights, axis=1)
-        # costs = z
+        # costs = np.linalg.norm(cost_fields*cost_weights, axis=1)
+        costs = points[:, 3]
 
         # print(z[z < -0.3].size)
         # print(z[z < 0].size)
@@ -121,13 +122,14 @@ class Otsus:
         max_y = np.max(y)
         x_size = max_x - min_x
         y_size = max_y - min_y
-        pixel_size = 0.01
+        pixel_size = 0.05
         
         # create an opencv matrix of size equal to some multiple of the pointcloud range
         # has an extra dimension for keeping track of averages
         x_pixels = np.ceil(x_size/pixel_size).astype(int)
         y_pixels = np.ceil(y_size/pixel_size).astype(int)
         mat = np.zeros((x_pixels, y_pixels, 2))
+        print(mat.shape)
         
         # for each point in the cloud
             # divide its x and y by something to get its index in the image matrix
@@ -142,9 +144,9 @@ class Otsus:
             mat[x_id, y_id, 1] += 1
 
         image = 1 - mat[:, :, 0]
-        print(f"bmin: {np.min(image)}, bmax: {np.max(image)}")
+        # print(f"bmin: {np.min(image)}, bmax: {np.max(image)}")
         cv2.normalize(image, None, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-        print(f"amin: {np.min(image)}, amax: {np.max(image)}")
+        # print(f"amin: {np.min(image)}, amax: {np.max(image)}")
         # print(image[image > 200])
         # cv2.imshow("img", image)
         # cv2.waitKey(10)
