@@ -19,24 +19,46 @@ class Visualizer:
         # rospy.Subscriber("rtabmap/cloud_ground", PointCloud2, self.pc_callback)
         self.num_publishers = 3
         self.pc_pubs = [rospy.Publisher(f"filtered_pc{i}", PointCloud2, queue_size=1) for i in range(self.num_publishers)]
-        self.visualize_pc_frame("data/zed_pc_frame1.txt")
+        # self.visualize_pc_frame("data/zed_pc_frame1.txt")
+        self.visualize()
         # self.visualize_pc_frame("data/fake_pc_frame1.txt")
     
-    def visualize_pc_frame(self, pc_frame: str):
+    def load_pc_frame(self, pc_frame: str) -> np.ndarray:
         points = np.loadtxt(pc_frame)
         points = points[points[:, 0] != np.inf]
-        colors = points[:, 3:]
+        return points
+
+    
+    def load_img_frame(self, img_frame: str) -> np.ndarray:
+        img = cv2.imread(img_frame)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        colors = img.reshape((-1, 3)).astype("float64") / 255.0
+        return colors
+    
+    def load_img_labels(self, img: str) -> np.ndarray:
+        colors = self.load_img_frame(img)
+        labels = np.zeros(colors.shape[0])
+        labels[colors[:, 0] == 1.0] = 1
+        return labels
+        
+    def visualize(self):
+        # colors = points[:, 3:]
+        colors = self.load_img_frame("data/rgb_img_zed1.png")
+        labels = self.load_img_labels("data/labeled_img_zed1.png")
+        points = self.load_pc_frame("data/zed_pc_frame1.txt")
+        colors2 = points[:, 3:]
 
         self.fig = plt.figure()
         self.plot_rgb_space(colors, colors, r=1, c=2, i=1)
+        self.plot_rgb_space(colors, labels, r=1, c=2, i=2)
         # self.plot_xyz_space(points[:, :3], color_points=points[:, 3:])
         # self.plot_kmeans(points[:, 3:])
         
         distances = self.color_distance_grouping(colors)
-        self.plot_rgb_space(colors, distances, r=1, c=2, i=2)
+        # self.plot_rgb_space(colors, distances, r=1, c=2, i=2)
         plt.show()
         # self.publish_kmeans(points)
-        
 
     def pc_callback(self, msg):
         print("callback")
@@ -66,11 +88,11 @@ class Visualizer:
         # rgb_points = points[:, 3:]
         ax = self.fig.add_subplot(r, c, i, projection="3d")
         ax.clear()
-        sc = ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=colors,  cmap="plasma", marker="x")
+        sc = ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=colors,  cmap="plasma", marker=".")
         ax.set_xlabel("Red")
         ax.set_ylabel("Green")
         ax.set_zlabel("Blue")
-        plt.colorbar(sc, label="color distance")
+        # plt.colorbar(sc, label="color distance")
         # plt.pause(0.05)
     
     def kmeans(self, points: np.ndarray, n_clusters: int) -> np.ndarray:
