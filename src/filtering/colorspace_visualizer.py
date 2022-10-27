@@ -30,8 +30,27 @@ class Visualizer:
     def visualize(self):
         rgb_colors = utils.load_img_frame("data/rgb_img_zed1.png", blur=True)
         hsv_colors = rgb_to_hsv(rgb_colors)
-        hose_labels = utils.load_img_labels("data/labeled_hose_ground_zed.png")
+        labels = utils.load_img_labels("data/labeled_hose_ground_zed.png")
         color_strings = [f"rgb({r},{g},{b})" for r, g, b in rgb_colors]
+
+        hose_rgbs = rgb_colors[labels == 0.5]
+        floor_rgbs = rgb_colors[labels == 1]
+        other_rgbs = rgb_colors[labels == 0]
+
+        hose_hsvs = hsv_colors[labels == 0.5]
+        floor_hsvs = hsv_colors[labels == 1]
+        other_hsvs = hsv_colors[labels == 0]
+        # self.plot_histogram(rgb_colors, hsv_colors, title="all points")
+        # self.plot_histogram(floor_rgbs, floor_hsvs, title="floor")
+        # self.plot_histogram(hose_rgbs, hose_hsvs, title="hose")
+        # self.plot_histogram(other_rgbs, other_hsvs, title="other")
+        # plt.show()
+
+        obstacle_labels = self.histogram_filter(hsv_colors, floor_hsvs)
+        img = cv2.imread("data/rgb_img_zed1.png")
+        obstacle_labels = obstacle_labels.reshape((img.shape[0], img.shape[1]))
+        img[obstacle_labels] = np.array([255, 0, 255])
+        cv2.imshow(img)
         # points = utils.load_pc_frame("data/zed_pc_frame1.txt")
         # rgb_colors = points[:, 3:]
 
@@ -44,14 +63,14 @@ class Visualizer:
         # distances = self.color_distance_grouping(colors)
         # self.plot_rgb_space(colors, distances, r=1, c=2, i=2)
         # self.plot_hsv_space(hsv_colors, rgb_colors, r=1, c=2, i=1)
-        # self.plot_hsv_space(hsv_colors, hose_labels, r=1, c=2, i=2)
+        # self.plot_hsv_space(hsv_colors, labels, r=1, c=2, i=2)
         # self.plot_hs(hsv_colors, rgb_colors, r=1, c=2, i=1)
-        # self.plot_hs(hsv_colors, hose_labels, r=1, c=2, i=2)
+        # self.plot_hs(hsv_colors, labels, r=1, c=2, i=2)
         # plt.show()
         # self.go_plot_rgb_space(rgb_colors, rgb_colors)
-        self.go_plot_rgb_space(rgb_colors, hose_labels)
+        # self.go_plot_rgb_space(rgb_colors, labels)
         # self.go_plot_hsv_space(hsv_colors, rgb_colors)
-        self.go_plot_hsv_space(hsv_colors, hose_labels)
+        # self.go_plot_hsv_space(hsv_colors, labels)
         # self.publish_kmeans(points)
 
     def pc_callback(self, msg):
@@ -67,18 +86,28 @@ class Visualizer:
         # self.plot_rgb_space(points)
         self.plot_kmeans()
 
-    def plot_histogram(self, points):
-        red_vals = points[:, 3]
-        f, axs = plt.subplots(1, 3, sharey=True)
-        axs[0].hist(red_vals, bins=50)
-        axs[0].set_ylabel("Frequency")
-        axs[0].set_xlabel("Red Intensity")
-        axs[1].hist(points[:, 4], bins=50)
-        # axs[1].set_ylabel("Frequency")
-        axs[1].set_xlabel("Green Intensity")
-        axs[2].hist(points[:, 5], bins=50)
-        # axs[2].set_ylabel("Frequency")
-        axs[2].set_xlabel("Blue Intensity")
+    def plot_histogram(self, rgbs, hsvs, title=""):
+        f, axs = plt.subplots(2, 3, sharey=True)
+        f.suptitle(title)
+        axs[0][0].hist(rgbs[:, 0], bins=50, color="r")
+        axs[0][0].set_ylabel("Frequency")
+        axs[0][0].set_xlabel("Red")
+        axs[0][1].hist(rgbs[:, 1], bins=50, color="g")
+        axs[0][1].set_xlabel("Green")
+        axs[0][2].hist(rgbs[:, 2], bins=50, color="b")
+        axs[0][2].set_xlabel("Blue")
+
+        axs[1][0].hist(hsvs[:, 0], bins=50)
+        axs[1][0].set_ylabel("Frequency")
+        axs[1][0].set_xlabel("Hue")
+        axs[1][1].hist(hsvs[:, 1], bins=50)
+        axs[1][1].set_xlabel("Saturation")
+        axs[1][2].hist(hsvs[:, 2], bins=50)
+        axs[1][2].set_xlabel("Value")
+
+        for row in axs:
+            for ax in row:
+                ax.set_xlim(0, 1)
 
     def plot_hs(self, points, colors, r=1, c=1, i=1):
         ax = self.fig.add_subplot(r, c, i)
@@ -165,6 +194,34 @@ class Visualizer:
         )
         fig.show()
 
+    def histogram_filter(self, hsvs, ref_hsvs):
+        # make histograms of H and S or H and V for ref points
+        # could be a 2D histogram
+        h_hist, h_bins = np.histogram(ref_hsvs[:, 0], bins=20, density=True)
+        s_hist, s_bins = np.histogram(ref_hsvs[:, 1], bins=20, density=True)
+        v_hist, v_bins = np.histogram(ref_hsvs[:, 2], bins=20, density=True)
+        
+        # filter threshold out low H and S values
+        
+        # get values of each point in image in each histogram
+        # if either histogram value is too low, its an obstacle
+        # TODO: we cant just delete these, need to understand if these obstacles or not and then save that info
+        h_ids = np.digitize(hsvs[:, 0], h_bins) - 1
+        h_ids = h_ids[(h_ids >= 0) & (h_ids < 20)]
+        s_ids = np.digitize(hsvs[:, 0], s_bins) - 1
+        s_ids = s_ids[(s_ids >= 0) & (s_ids < 20)]
+        v_ids = np.digitize(hsvs[:, 0], v_bins) - 1
+        v_ids = v_ids[(v_ids >= 0) & (v_ids < 20)]
+
+        h_obstacles = h_hist[h_ids] < 0.2
+        s_obstacles = s_hist[s_ids] < 0.2
+        v_obstacles = v_hist[v_ids] < 0.2
+
+        is_obstacle = h_obstacles | s_obstacles | v_obstacles
+        obstacle_labels = np.zeros(is_obstacle.shape[0])
+        obstacle_labels[is_obstacle] = 1
+        return obstacle_labels
+        
     def kmeans(self, points: np.ndarray, n_clusters: int) -> np.ndarray:
         estimator = KMeans(n_clusters=n_clusters, random_state=0).fit(points)
         point_labels = estimator.predict(points)

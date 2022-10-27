@@ -40,8 +40,10 @@ def load_img_labels(filename: str) -> np.ndarray:
     Load an Nx1 numpy array of labels from an RGB image where labeled points are white
 
     :param filename: the name of the file to read from
-    :returns: 1D numpy array where each each value is either a 1 or a 0,
-              depending on whether the point was labeled in the image or not
+    :returns: 1D numpy array where each each value is either a 0, 0.5, or 1
+              0 = not hose, not ground
+              0.5 = hose
+              1 = ground
     """
     colors = load_img_frame(filename)
     labels = np.zeros(colors.shape[0])
