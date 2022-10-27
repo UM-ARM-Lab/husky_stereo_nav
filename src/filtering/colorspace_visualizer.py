@@ -5,11 +5,12 @@ from sensor_msgs.msg import PointCloud2, PointField
 from std_msgs.msg import Header
 import sensor_msgs.point_cloud2 as pc2
 import cv2
-import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
-from color_utils import float_to_rgb
+from matplotlib.colors import rgb_to_hsv
+import utils
 from sklearn.cluster import KMeans
+import plotly.graph_objects as go
 
 
 class Visualizer:
@@ -18,53 +19,49 @@ class Visualizer:
         # rospy.Subscriber("zed2i/zed_node/point_cloud/cloud_registered", PointCloud2, self.pc_callback)
         # rospy.Subscriber("rtabmap/cloud_ground", PointCloud2, self.pc_callback)
         self.num_publishers = 3
-        self.pc_pubs = [rospy.Publisher(f"filtered_pc{i}", PointCloud2, queue_size=1) for i in range(self.num_publishers)]
+        self.pc_pubs = [
+            rospy.Publisher(f"filtered_pc{i}", PointCloud2, queue_size=1)
+            for i in range(self.num_publishers)
+        ]
         # self.visualize_pc_frame("data/zed_pc_frame1.txt")
         self.visualize()
         # self.visualize_pc_frame("data/fake_pc_frame1.txt")
-    
-    def load_pc_frame(self, pc_frame: str) -> np.ndarray:
-        points = np.loadtxt(pc_frame)
-        points = points[points[:, 0] != np.inf]
-        return points
 
-    
-    def load_img_frame(self, img_frame: str) -> np.ndarray:
-        img = cv2.imread(img_frame)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        colors = img.reshape((-1, 3)).astype("float64") / 255.0
-        return colors
-    
-    def load_img_labels(self, img: str) -> np.ndarray:
-        colors = self.load_img_frame(img)
-        labels = np.zeros(colors.shape[0])
-        labels[colors[:, 0] == 1.0] = 1
-        return labels
-        
     def visualize(self):
-        # colors = points[:, 3:]
-        colors = self.load_img_frame("data/rgb_img_zed1.png")
-        labels = self.load_img_labels("data/labeled_img_zed1.png")
-        points = self.load_pc_frame("data/zed_pc_frame1.txt")
-        colors2 = points[:, 3:]
+        rgb_colors = utils.load_img_frame("data/rgb_img_zed1.png", blur=True)
+        hsv_colors = rgb_to_hsv(rgb_colors)
+        hose_labels = utils.load_img_labels("data/labeled_hose_ground_zed.png")
+        color_strings = [f"rgb({r},{g},{b})" for r, g, b in rgb_colors]
+        # points = utils.load_pc_frame("data/zed_pc_frame1.txt")
+        # rgb_colors = points[:, 3:]
 
-        self.fig = plt.figure()
-        self.plot_rgb_space(colors, colors, r=1, c=2, i=1)
-        self.plot_rgb_space(colors, labels, r=1, c=2, i=2)
+        # self.fig = plt.figure()
+        # self.plot_rgb_space(colors, colors, r=1, c=2, i=1)
+        # self.plot_rgb_space(colors, labels, r=1, c=2, i=2)
         # self.plot_xyz_space(points[:, :3], color_points=points[:, 3:])
         # self.plot_kmeans(points[:, 3:])
-        
-        distances = self.color_distance_grouping(colors)
+
+        # distances = self.color_distance_grouping(colors)
         # self.plot_rgb_space(colors, distances, r=1, c=2, i=2)
-        plt.show()
+        # self.plot_hsv_space(hsv_colors, rgb_colors, r=1, c=2, i=1)
+        # self.plot_hsv_space(hsv_colors, hose_labels, r=1, c=2, i=2)
+        # self.plot_hs(hsv_colors, rgb_colors, r=1, c=2, i=1)
+        # self.plot_hs(hsv_colors, hose_labels, r=1, c=2, i=2)
+        # plt.show()
+        # self.go_plot_rgb_space(rgb_colors, rgb_colors)
+        self.go_plot_rgb_space(rgb_colors, hose_labels)
+        # self.go_plot_hsv_space(hsv_colors, rgb_colors)
+        self.go_plot_hsv_space(hsv_colors, hose_labels)
         # self.publish_kmeans(points)
 
     def pc_callback(self, msg):
         print("callback")
         # Nx6 array of [x, y, z, r, g, b]
         points = np.array(list(pc2.read_points(msg, skip_nans=True)))
-        rgb_points = np.vstack([float_to_rgb(intensity) for intensity in points[:, 3]]) / 255
+        rgb_points = (
+            np.vstack([utils.float_to_rgb(intensity) for intensity in points[:, 3]])
+            / 255
+        )
         points = np.column_stack((points[:, :3], rgb_points))
         # self.plot_histogram(points)
         # self.plot_rgb_space(points)
@@ -83,23 +80,96 @@ class Visualizer:
         # axs[2].set_ylabel("Frequency")
         axs[2].set_xlabel("Blue Intensity")
 
+    def plot_hs(self, points, colors, r=1, c=1, i=1):
+        ax = self.fig.add_subplot(r, c, i)
+        sc = ax.scatter(points[:, 0], points[:, 1], c=colors, cmap="plasma", marker=".")
+        ax.set_xlabel("Hue")
+        ax.set_ylabel("Saturation")
+        
     def plot_rgb_space(self, points, colors, r=1, c=1, i=1):
         # Nx3 array of [r, g, b]
         # rgb_points = points[:, 3:]
         ax = self.fig.add_subplot(r, c, i, projection="3d")
         ax.clear()
-        sc = ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=colors,  cmap="plasma", marker=".")
+        sc = ax.scatter(
+            points[:, 0],
+            points[:, 1],
+            points[:, 2],
+            c=colors,
+            cmap="plasma",
+            marker=".",
+        )
         ax.set_xlabel("Red")
         ax.set_ylabel("Green")
         ax.set_zlabel("Blue")
         # plt.colorbar(sc, label="color distance")
         # plt.pause(0.05)
-    
+
+    def plot_hsv_space(self, hsv_points, colors, r=1, c=1, i=1):
+        ax = self.fig.add_subplot(r, c, i, projection="3d")
+        sc = ax.scatter(
+            hsv_points[:, 0],
+            hsv_points[:, 1],
+            hsv_points[:, 2],
+            c=colors,
+            cmap="plasma",
+            marker=".",
+        )
+        ax.set_xlabel("Hue")
+        ax.set_ylabel("Saturation")
+        ax.set_zlabel("Value")
+        # plt.colorbar(sc, label="color distance")
+        # plt.pause(0.05)
+
+    def go_plot_rgb_space(self, points, color_strings, r=1, c=1, i=1):
+        # Nx3 array of [r, g, b]
+        # rgb_points = points[:, 3:]
+        sc = go.Scatter3d(
+            x=points[:, 0],
+            y=points[:, 1],
+            z=points[:, 2],
+            marker=go.scatter3d.Marker(color=color_strings, size=1),
+            opacity=0.9,
+            mode="markers",
+        )
+        fig = go.Figure(data=sc)
+        fig.update_layout(
+            scene=dict(
+                xaxis_title="Red",
+                yaxis_title="Green",
+                zaxis_title="Blue",
+            ),
+            width=700,
+            margin=dict(r=20, b=10, l=10, t=10),
+        )
+        fig.show()
+
+    def go_plot_hsv_space(self, hsv_points, color_strings, r=1, c=1, i=1):
+        sc = go.Scatter3d(
+            x=hsv_points[:, 0],
+            y=hsv_points[:, 1],
+            z=hsv_points[:, 2],
+            marker=go.scatter3d.Marker(color=color_strings, size=1),
+            opacity=0.9,
+            mode="markers",
+        )
+        fig = go.Figure(data=sc)
+        fig.update_layout(
+            scene=dict(
+                xaxis_title="Hue",
+                yaxis_title="Saturation",
+                zaxis_title="Value",
+            ),
+            width=700,
+            margin=dict(r=20, b=10, l=10, t=10),
+        )
+        fig.show()
+
     def kmeans(self, points: np.ndarray, n_clusters: int) -> np.ndarray:
         estimator = KMeans(n_clusters=n_clusters, random_state=0).fit(points)
         point_labels = estimator.predict(points)
         return point_labels
-    
+
     def plot_kmeans(self, points):
         point_labels = self.kmeans(points, 2)
         group1 = points[point_labels == 0]
@@ -118,7 +188,7 @@ class Visualizer:
             ax.set_xlim(0, 1)
             ax.set_ylim(0, 1)
             ax.set_zlim(0, 1)
-    
+
     def publish_kmeans(self, points):
         point_labels = self.kmeans(points[:, 3:], 2)
         group1 = points[point_labels == 0]
@@ -127,7 +197,7 @@ class Visualizer:
         r = rospy.Rate(10)
         while not rospy.is_shutdown():
             self.publish_pointclouds(pointclouds, frame_id="zed2i_left_camera_frame")
-    
+
     def publish_pointclouds(self, pointclouds, frame_id="map"):
         for i, points in enumerate(pointclouds):
             header = Header(stamp=rospy.Time.now(), frame_id=frame_id)
@@ -140,9 +210,7 @@ class Visualizer:
                 PointField(name="b", offset=20, datatype=7, count=1),
             ]
             self.pc_pubs[i].publish(pc2.create_cloud(header, fields, points))
-        
 
-    
     def plot_xyz_space(self, points, color_points):
         ax = self.fig.add_subplot(projection="3d")
         ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=color_points, marker=".")
@@ -150,10 +218,10 @@ class Visualizer:
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.set_zlabel("Z")
-         
+
     def get_avg_color(self, colors: np.ndarray) -> np.ndarray:
         return np.mean(colors, axis=0)
-    
+
     def get_dominant_color(self, colors: np.ndarray, n_clusters) -> np.ndarray:
         """
         :param colors: nx3 numpy array containing RGB values for each point in the pointcloud
@@ -170,7 +238,9 @@ class Visualizer:
         # (64, 56, 50)
 
         # TODO: make this code better, no hardcoded cluster num
-        if np.count_nonzero(labeled_colors == 0) >= np.count_nonzero(labeled_colors == 1):
+        if np.count_nonzero(labeled_colors == 0) >= np.count_nonzero(
+            labeled_colors == 1
+        ):
             return dominant_colors[0]
         return dominant_colors[1]
 
@@ -178,8 +248,8 @@ class Visualizer:
         floor_color = self.get_dominant_color(colors, n_clusters=2)
         color_distances = np.linalg.norm(colors - floor_color, axis=1)
         return color_distances
-    
-        
+
+
 def main():
     rospy.init_node("colorspace_visualizer")
     vis = Visualizer()
