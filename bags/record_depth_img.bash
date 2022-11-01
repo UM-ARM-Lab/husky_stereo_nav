@@ -1,0 +1,1 @@
+rosbag record -o hose_depth_image4 zed2i/zed_node/rgb/image_rect_color /zed2i/zed_node/depth/depth_registered /tf /zed2i/zed_node/point_cloud/cloud_registered /zed2i/zed_node/rgb/camera_info /zed2i/zed_node/left/image_rect_color /zed2i/zed_node/left/camera_info /zed2i/zed_node/left/image_rect_color /zed2i/zed_node/left/camera_info
