@@ -40,17 +40,55 @@ class Visualizer:
         hose_hsvs = hsv_colors[labels == 0.5]
         floor_hsvs = hsv_colors[labels == 1]
         other_hsvs = hsv_colors[labels == 0]
-        # self.plot_histogram(rgb_colors, hsv_colors, title="all points")
-        # self.plot_histogram(floor_rgbs, floor_hsvs, title="floor")
-        # self.plot_histogram(hose_rgbs, hose_hsvs, title="hose")
-        # self.plot_histogram(other_rgbs, other_hsvs, title="other")
-        # plt.show()
+        # self.plot_histogram(rgb_colors, hsv_colors, title="All Points")
+        # self.plot_histogram(floor_rgbs, floor_hsvs, title="Floor")
+        # self.plot_histogram(hose_rgbs, hose_hsvs, title="Hose")
+        # self.plot_histogram(other_rgbs, other_hsvs, title="Other")
+        f, axs = plt.subplots(1, 3, sharey=True)
+        axs[0].hist(hsv_colors[:, 0], bins=100, color="c")
+        axs[0].set_xlabel("Hue")
+        axs[1].hist(hsv_colors[:, 1], bins=100, color="m")
+        axs[1].set_xlabel("Saturation")
+        axs[2].hist(hsv_colors[:, 2], bins=100, color="y")
+        axs[2].set_xlabel("Value")
+        plt.suptitle("All Points")
+        for ax in axs:
+            ax.set_xlim(0, 1)
+            # ax.set_ylim(0, 20000)
 
-        obstacle_labels = self.histogram_filter(hsv_colors, floor_hsvs)
-        img = cv2.imread("data/rgb_img_zed1.png")
-        obstacle_labels = obstacle_labels.reshape((img.shape[0], img.shape[1]))
-        img[obstacle_labels] = np.array([255, 0, 255])
-        cv2.imshow(img)
+        f, axs = plt.subplots(1, 3, sharey=True)
+        axs[0].hist(floor_hsvs[:, 0], bins=100, color="c")
+        axs[0].set_xlabel("Hue")
+        axs[1].hist(floor_hsvs[:, 1], bins=100, color="m")
+        axs[1].set_xlabel("Saturation")
+        axs[2].hist(floor_hsvs[:, 2], bins=100, color="y")
+        axs[2].set_xlabel("Value")
+        plt.suptitle("Floor")
+        for ax in axs:
+            ax.set_xlim(0, 1)
+            # ax.set_ylim(0, 20000)
+
+        f, axs = plt.subplots(1, 3, sharey=True)
+        axs[0].hist(other_hsvs[:, 0], bins=100, color="c")
+        axs[0].set_xlabel("Hue")
+        axs[1].hist(other_hsvs[:, 1], bins=100, color="m")
+        axs[1].set_xlabel("Saturation")
+        axs[2].hist(other_hsvs[:, 2], bins=100, color="y")
+        axs[2].set_xlabel("Value")
+        plt.suptitle("Other")
+        for ax in axs:
+            ax.set_xlim(0, 1)
+            # ax.set_ylim(0, 20000)
+        plt.show()
+
+        # obstacle_labels = self.histogram_filter(hsv_colors, floor_hsvs)
+        # img = cv2.imread("data/rgb_img_zed1.png")
+        # obstacle_labels = obstacle_labels.reshape((img.shape[0], img.shape[1]))
+        # img[obstacle_labels] = np.array([255, 0, 255])
+        # cv2.imwrite("data/segmented_rgb2.png", img)
+        # cv2.imshow("labeled", img)
+        # cv2.waitKey(0)
+       
         # points = utils.load_pc_frame("data/zed_pc_frame1.txt")
         # rgb_colors = points[:, 3:]
 
@@ -97,17 +135,18 @@ class Visualizer:
         axs[0][2].hist(rgbs[:, 2], bins=50, color="b")
         axs[0][2].set_xlabel("Blue")
 
-        axs[1][0].hist(hsvs[:, 0], bins=50)
+        axs[1][0].hist(hsvs[:, 0], bins=50, color="c")
         axs[1][0].set_ylabel("Frequency")
         axs[1][0].set_xlabel("Hue")
-        axs[1][1].hist(hsvs[:, 1], bins=50)
+        axs[1][1].hist(hsvs[:, 1], bins=50, color="m")
         axs[1][1].set_xlabel("Saturation")
-        axs[1][2].hist(hsvs[:, 2], bins=50)
+        axs[1][2].hist(hsvs[:, 2], bins=50, color="y")
         axs[1][2].set_xlabel("Value")
 
         for row in axs:
             for ax in row:
                 ax.set_xlim(0, 1)
+                ax.set_ylim(0, 20000)
 
     def plot_hs(self, points, colors, r=1, c=1, i=1):
         ax = self.fig.add_subplot(r, c, i)
@@ -160,6 +199,8 @@ class Visualizer:
             marker=go.scatter3d.Marker(color=color_strings, size=1),
             opacity=0.9,
             mode="markers",
+            name="floor",
+            showlegend=True
         )
         fig = go.Figure(data=sc)
         fig.update_layout(
@@ -200,27 +241,32 @@ class Visualizer:
         h_hist, h_bins = np.histogram(ref_hsvs[:, 0], bins=20, density=True)
         s_hist, s_bins = np.histogram(ref_hsvs[:, 1], bins=20, density=True)
         v_hist, v_bins = np.histogram(ref_hsvs[:, 2], bins=20, density=True)
-        
+
         # filter threshold out low H and S values
         
         # get values of each point in image in each histogram
         # if either histogram value is too low, its an obstacle
         # TODO: we cant just delete these, need to understand if these obstacles or not and then save that info
+        # if a value is outside of the range of the histogram, it's definitely an obstacle because it has zero entries 
         h_ids = np.digitize(hsvs[:, 0], h_bins) - 1
-        h_ids = h_ids[(h_ids >= 0) & (h_ids < 20)]
-        s_ids = np.digitize(hsvs[:, 0], s_bins) - 1
-        s_ids = s_ids[(s_ids >= 0) & (s_ids < 20)]
-        v_ids = np.digitize(hsvs[:, 0], v_bins) - 1
-        v_ids = v_ids[(v_ids >= 0) & (v_ids < 20)]
+        out_of_bounds_ids = (h_ids <= 0) | (h_ids >= 20)
+        h_ids[out_of_bounds_ids] = 1
+        s_ids = np.digitize(hsvs[:, 1], s_bins) - 1
+        out_of_bounds_ids = (s_ids <= 0) | (s_ids >= 20)
+        s_ids[out_of_bounds_ids] = 1
+        # v_ids = np.digitize(hsvs[:, 2], v_bins) - 1
+        # out_of_bounds_ids = (v_ids <= 0) | (v_ids >= 20)
+        # v_ids[out_of_bounds_ids] = 1
 
-        h_obstacles = h_hist[h_ids] < 0.2
+        h_obstacles = h_hist[h_ids] < 0.5
         s_obstacles = s_hist[s_ids] < 0.2
-        v_obstacles = v_hist[v_ids] < 0.2
+        # v_obstacles = v_hist[v_ids] < 0.5
 
-        is_obstacle = h_obstacles | s_obstacles | v_obstacles
-        obstacle_labels = np.zeros(is_obstacle.shape[0])
-        obstacle_labels[is_obstacle] = 1
-        return obstacle_labels
+        # is_obstacle = h_obstacles | s_obstacles | v_obstacles | out_of_bounds_ids
+        is_obstacle = h_obstacles | s_obstacles | out_of_bounds_ids
+        # obstacle_labels = np.zeros(is_obstacle.shape[0])
+        # obstacle_labels[is_obstacle] = 1
+        return is_obstacle
         
     def kmeans(self, points: np.ndarray, n_clusters: int) -> np.ndarray:
         estimator = KMeans(n_clusters=n_clusters, random_state=0).fit(points)
