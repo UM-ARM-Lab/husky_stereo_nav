@@ -19,9 +19,9 @@ class Filter:
 
     def visualize(self):
         # get RGB and HSV points from image
-        filename = "data/rgb_img_zed2.png"
-        img = cv2.imread(filename)
-        img = cv2.GaussianBlur(img, (5, 5), 0)
+        filename = "data/new_labeled/11_1_4.png"
+        original = cv2.imread(filename)
+        img = cv2.GaussianBlur(original, (5, 5), 0)
         # cv2.imshow("blur", img)
         # cv2.waitKey(0)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -30,7 +30,8 @@ class Filter:
         hsv_colors = rgb_to_hsv(rgb_colors)
 
         # get hose, floor, and other labels from labeled image
-        labels = utils.load_img_labels("data/labeled_hose_ground_zed.png")
+        labels = utils.load_img_labels("data/new_labeled/11_1_4_colored.png")
+
         floor_hsvs = hsv_colors[labels == 1]
 
         # hose_rgbs = rgb_colors[labels == 0.5]
@@ -45,8 +46,11 @@ class Filter:
         # make obstacle pixels pink
         img = cv2.imread(filename)
         obstacle_labels = obstacle_labels.reshape((img.shape[0], img.shape[1]))
+        # obstacle_labels = (labels == 0.5).reshape((img.shape[0], img.shape[1]))
         img[obstacle_labels] = np.array([255, 0, 255])
+        cv2.imwrite("segmented_11_1_4.png", img)
         cv2.imshow("labeled", img)
+        # cv2.imshow("original", original)
         cv2.waitKey(0)
 
     def histogram_filter(self, hsvs, ref_hsvs):
@@ -56,7 +60,9 @@ class Filter:
         s_hist, s_bins = np.histogram(ref_hsvs[:, 1], bins=20, density=True)
         v_hist, v_bins = np.histogram(ref_hsvs[:, 2], bins=20, density=True)
 
-        # filter threshold out low H and S values
+        # filter threshold out low V and S values
+        valid_hues = (hsvs[:, 2] > 0.1) & (hsvs[:, 1] > 0.1)
+        valid_sats = hsvs[:, 2] > 0.1
         
         # get values of each point in image in each histogram
         # if either histogram value is too low, its an obstacle
@@ -67,18 +73,17 @@ class Filter:
         s_ids = np.digitize(hsvs[:, 1], s_bins) - 1
         out_of_bounds_ids = (s_ids <= 0) | (s_ids >= 20)
         s_ids[out_of_bounds_ids] = 1
-        # v_ids = np.digitize(hsvs[:, 2], v_bins) - 1
-        # out_of_bounds_ids = (v_ids <= 0) | (v_ids >= 20)
-        # v_ids[out_of_bounds_ids] = 1
+        v_ids = np.digitize(hsvs[:, 2], v_bins) - 1
+        out_of_bounds_ids = (v_ids <= 0) | (v_ids >= 20)
+        v_ids[out_of_bounds_ids] = 1
 
         h_obstacles = h_hist[h_ids] < 0.5
-        s_obstacles = s_hist[s_ids] < 0.2
-        # v_obstacles = v_hist[v_ids] < 0.5
+        s_obstacles = s_hist[s_ids] < 0.1
+        v_obstacles = v_hist[v_ids] < 0.3
 
-        # is_obstacle = h_obstacles | s_obstacles | v_obstacles | out_of_bounds_ids
-        is_obstacle = h_obstacles | s_obstacles | out_of_bounds_ids
-        # obstacle_labels = np.zeros(is_obstacle.shape[0])
-        # obstacle_labels[is_obstacle] = 1
+        is_obstacle = h_obstacles | s_obstacles | v_obstacles | out_of_bounds_ids
+        # is_obstacle = h_obstacles | s_obstacles | out_of_bounds_ids
+        # is_obstacle = (h_obstacles & valid_hues) | (s_obstacles & valid_sats) | out_of_bounds_ids
         return is_obstacle
         
     def publish_pointclouds(self, pointclouds, frame_id="map"):
