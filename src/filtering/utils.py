@@ -68,3 +68,34 @@ def float_to_rgb(float_rgb: float) -> np.ndarray:
     b = pack & 0x000000FF
 
     return np.array([r, g, b])
+
+def rgb_to_hsi(img: np.ndarray) -> np.ndarray:
+
+    with np.errstate(divide="ignore", invalid="ignore"):
+
+        # Load image with 32 bit floats as variable type
+        bgr = np.float32(img) / 255
+
+        # Separate color channels
+        blue = bgr[:, :, 0]
+        green = bgr[:, :, 1]
+        red = bgr[:, :, 2]
+
+        # Calculate Intensity
+        intensity = np.average(bgr, axis=2)
+
+        # Calculate Saturation
+        minimum = np.amin(bgr, axis=2)
+        saturation = 1 - (3 / (np.sum(bgr, axis=2) + 0.001) * minimum)
+
+        # Calculate Hue
+        hue = np.arccos(
+            0.5
+            * ((red - green) + (red - blue))
+            / np.sqrt((red - green) ** 2 + ((red - blue) * (green - blue)))
+        )
+        ids = blue > green
+        hue[ids] = 2 * np.pi - hue[ids]
+
+        return np.stack((hue, saturation, intensity), axis=2)
+

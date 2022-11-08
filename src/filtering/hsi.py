@@ -1,9 +1,8 @@
 import cv2
 import numpy as np
-import math
 
 
-def RGB_TO_HSI(img):
+def rgb_to_hsi(img):
 
     with np.errstate(divide="ignore", invalid="ignore"):
 
@@ -32,13 +31,15 @@ def RGB_TO_HSI(img):
         hue[ids] = 2 * np.pi - hue[ids]
 
         # Merge channels into picture and return image
-        hsi = cv2.merge((hue, saturation, intensity))
-        return hsi
+        # hsi = cv2.merge((hue, saturation, intensity))
+        print(np.min(hue), np.max(hue), np.min(saturation), np.max(saturation), np.min(intensity), np.max(intensity))
+        return np.stack((hue, saturation, intensity), axis=2)
+        # return hsi
 
 
 if __name__ == "__main__":
     img = cv2.imread("data/rgb_img_zed1.png")
-    hsi = RGB_TO_HSI(img)
+    hsi = rgb_to_hsi(img)
     # cv2.imwrite("hsi_ref_image.png", hsi)
     cv2.imshow("test", hsi)
     cv2.waitKey()
