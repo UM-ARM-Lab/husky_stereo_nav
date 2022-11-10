@@ -21,9 +21,17 @@ class HoseDataset(torch.utils.data.Dataset):
         # note that we haven't converted the mask to RGB,
         # because each color corresponds to a different instance
         # with 0 being background
-        mask = Image.open(mask_path)
+        mask = Image.open(mask_path).convert("RGB")
+
         # convert the PIL Image into a numpy array
         mask = np.array(mask)
+        mask[np.all(mask == [0, 0, 0], axis=-1)] = 0
+        mask[np.all(mask == [0, 255, 0], axis=-1)] = 1
+        mask[np.all(mask == [255, 0, 0], axis=-1)] = 2
+        mask = mask[:, :, 0]
+        # mask = np.where(np.all(mask == [0, 255, 0], axis=-1), 1, 0)
+        # print(f"shape: {mask.shape}, sample pixel: {mask[191, 56]}")
+        
         # instances are encoded as different colors
         obj_ids = np.unique(mask)
         # first id is the background, so remove it
@@ -38,11 +46,14 @@ class HoseDataset(torch.utils.data.Dataset):
         boxes = []
         for i in range(num_objs):
             pos = np.where(masks[i])
+            print(pos)
             xmin = np.min(pos[1])
             xmax = np.max(pos[1])
             ymin = np.min(pos[0])
             ymax = np.max(pos[0])
             boxes.append([xmin, ymin, xmax, ymax])
+        
+        print(boxes)
 
         # convert everything into a torch.Tensor
         boxes = torch.as_tensor(boxes, dtype=torch.float32)

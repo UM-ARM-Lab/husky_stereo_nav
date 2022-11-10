@@ -31,6 +31,7 @@ class PennFudanDataset(torch.utils.data.Dataset):
         mask = Image.open(mask_path)
         # convert the PIL Image into a numpy array
         mask = np.array(mask)
+        print(f"shape: {mask.shape}, sample pixel: {mask[100, 251]}")
         # instances are encoded as different colors
         obj_ids = np.unique(mask)
         # first id is the background, so remove it

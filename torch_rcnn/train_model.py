@@ -48,17 +48,17 @@ def train():
     # our dataset has two classes only - background and person
     num_classes = 2
     # use our dataset and defined transformations
-    dataset = PennFudanDataset('PennFudanPed', get_transform(train=True))
-    dataset_test = PennFudanDataset('PennFudanPed', get_transform(train=False))
+    # dataset = PennFudanDataset('PennFudanPed', get_transform(train=True))
+    # dataset_test = PennFudanDataset('PennFudanPed', get_transform(train=False))
 
     # hose dataset
-    hose_data_set = HoseDataset("hose_dataset", get_transform(train=True))
-    hose_data_set_test = HoseDataset("hose_dataset", get_transform(train=False))
+    dataset = HoseDataset("hose_dataset", get_transform(train=True))
+    dataset_test = HoseDataset("hose_dataset", get_transform(train=False))
 
     # split the dataset in train and test set
     indices = torch.randperm(len(dataset)).tolist()
-    dataset = torch.utils.data.Subset(dataset, indices[:-50])
-    dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
+    dataset = torch.utils.data.Subset(dataset, indices[:-2])
+    dataset_test = torch.utils.data.Subset(dataset_test, indices[-2:])
 
     # define training and validation data loaders
     data_loader = torch.utils.data.DataLoader(
