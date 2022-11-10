@@ -10,18 +10,24 @@ from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from engine import train_one_epoch, evaluate
 import utils
 import transforms as T
-from train_model import PennFudanDataset, get_transform
+from train_model import get_transform
+from pennfudan_dataset import PennFudanDataset
+from hose_dataset import HoseDataset
+
 
 def predict():
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-    dataset = PennFudanDataset('PennFudanPed', get_transform(train=True))
-    dataset_test = PennFudanDataset('PennFudanPed', get_transform(train=False))
+    # dataset = PennFudanDataset('PennFudanPed', get_transform(train=True))
+    # dataset_test = PennFudanDataset('PennFudanPed', get_transform(train=False))
+
+    dataset = HoseDataset("hose_dataset", get_transform(train=True))
+    dataset_test = HoseDataset("hose_dataset", get_transform(train=False))
 
     # split the dataset in train and test set
     indices = torch.randperm(len(dataset)).tolist()
-    dataset = torch.utils.data.Subset(dataset, indices[:-50])
-    dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
+    dataset = torch.utils.data.Subset(dataset, indices[:-2])
+    dataset_test = torch.utils.data.Subset(dataset_test, indices[-2:])
 
     model = torch.load("example_model.pt")
     print("model loaded")
