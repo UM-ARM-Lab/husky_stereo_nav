@@ -2,9 +2,10 @@ import numpy as np
 import cv2
 import utils
 
-H_THRESH = 0.2
-S_THRESH = 0.0
-I_THRESH = 0.2
+H_THRESH = 0.15
+S_THRESH = 0.2
+I_THRESH = 0.0
+
 def segment_ref_hist_hsi(img: np.ndarray, ref_mask: np.ndarray):
     img = cv2.GaussianBlur(img, (5, 5), 0)
 
@@ -48,7 +49,7 @@ def histogram_filter_hsi(hsis, ref_hsis):
     s_obstacles = s_hist[s_ids] < S_THRESH
     i_obstacles = i_hist[i_ids] < I_THRESH
 
-    # is_obstacle = h_obstacles | s_obstacles | i_obstacles | out_of_bounds_ids
-    is_obstacle = h_obstacles | s_obstacles | out_of_bounds_ids
+    is_obstacle = h_obstacles | s_obstacles | i_obstacles | out_of_bounds_ids
+    # is_obstacle = h_obstacles | s_obstacles | out_of_bounds_ids
     # is_obstacle = (h_obstacles & valid_hues) | (s_obstacles & valid_sats) | out_of_bounds_ids
     return is_obstacle
