@@ -70,6 +70,9 @@ def float_to_rgb(float_rgb: float) -> np.ndarray:
     return np.array([r, g, b])
 
 def rgb_to_hsi(img: np.ndarray) -> np.ndarray:
+    """
+    Converts an NxMx3 BGR image array of [0, 255] values to an equivalent HSI image array
+    """
 
     with np.errstate(divide="ignore", invalid="ignore"):
 

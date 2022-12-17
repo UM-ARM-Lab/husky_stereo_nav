@@ -43,6 +43,8 @@ class Filter:
         # labels = utils.load_img_labels("data/labeled_hose_ground_zed.png")
 
         floor_hsvs = hsv_colors[labels == 1]
+        print(labels.shape)
+        print(hsi_colors.shape)
         floor_hsis = hsi_colors[labels == 1]
 
         # hose_rgbs = rgb_colors[labels == 0.5]
@@ -64,39 +66,6 @@ class Filter:
         cv2.imshow("labeled", img)
         # cv2.imshow("original", original)
         cv2.waitKey(0)
-
-    def histogram_filter_hsi(self, hsis, ref_hsis):
-        # make histograms of H and S or H and V for ref points
-        # could be a 2D histogram
-        h_hist, h_bins = np.histogram(ref_hsis[:, 0], bins=20, density=True)
-        s_hist, s_bins = np.histogram(ref_hsis[:, 1], bins=20, density=True)
-        i_hist, i_bins = np.histogram(ref_hsis[:, 2], bins=20, density=True)
-
-        # filter threshold out low V and S values
-        valid_hues = (hsis[:, 2] > 0.1) & (hsis[:, 1] > 0.1)
-        valid_sats = hsis[:, 2] > 0.1
-        
-        # get values of each point in image in each histogram
-        # if either histogram value is too low, its an obstacle
-        # if a value is outside of the range of the histogram, it's definitely an obstacle because it has zero entries 
-        h_ids = np.digitize(hsis[:, 0], h_bins) - 1
-        out_of_bounds_ids = (h_ids <= 0) | (h_ids >= 20)
-        h_ids[out_of_bounds_ids] = 1
-        s_ids = np.digitize(hsis[:, 1], s_bins) - 1
-        out_of_bounds_ids = (s_ids <= 0) | (s_ids >= 20)
-        s_ids[out_of_bounds_ids] = 1
-        i_ids = np.digitize(hsis[:, 2], i_bins) - 1
-        out_of_bounds_ids = (i_ids <= 0) | (i_ids >= 20)
-        i_ids[out_of_bounds_ids] = 1
-
-        h_obstacles = h_hist[h_ids] < 0.2
-        s_obstacles = s_hist[s_ids] < 0.0
-        i_obstacles = i_hist[i_ids] < 0.1
-
-        is_obstacle = h_obstacles | s_obstacles | i_obstacles | out_of_bounds_ids
-        # is_obstacle = h_obstacles | s_obstacles | out_of_bounds_ids
-        # is_obstacle = (h_obstacles & valid_hues) | (s_obstacles & valid_sats) | out_of_bounds_ids
-        return is_obstacle
 
     def histogram_filter(self, hsvs, ref_hsvs):
         # make histograms of H and S or H and V for ref points
