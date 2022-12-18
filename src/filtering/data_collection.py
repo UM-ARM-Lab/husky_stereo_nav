@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from ref_histogram import segment_ref_hist_hsi
+from rgb_dist import segment_rgb_dist
 
 
 def make_masks():
@@ -37,7 +38,7 @@ def get_dataset():
         data.append((img, floor_img, hose_img))
     return data
 
-def main():
+def hsi_data_collection():
     # [(img, floor_mask), ...]
     dataset = get_dataset()
 
@@ -75,15 +76,72 @@ def main():
     
     obs_rates = np.array(obs_rates)
     floor_rates = np.array(floor_rates)
-    floor_rates = np.array(floor_rates)
+    # floor_rates = np.array(floor_rates)
 
-    f, axs = plt.subplots(2, 1)
-    axs[0].boxplot(obs_rates, vert=False)
-    axs[0].set_xlabel("Hose Pixel Detection Rate")
-    axs[1].boxplot(floor_rates, vert=False)
-    axs[1].set_xlabel("Ground Pixel Detection Rate")
+    print(f"avg floor rate: {np.mean(floor_rates)}")
+    print(f"avg obs rate: {np.mean(obs_rates)}")
+
+    f, axs = plt.subplots(1, 2, sharey=True)
+    plt.suptitle("Segmentation Accuracy of HSI Histogram Method")
+    axs[0].boxplot(obs_rates, vert=True)
+    axs[0].set_ylabel("% hose pixels correctly segmented")
+    axs[1].boxplot(floor_rates, vert=True)
+    axs[1].set_ylabel("% ground pixels correctly segmented")
     plt.show()
     
+def rgb_dist_collection():
+    # [(img, floor_mask), ...]
+    dataset = get_dataset()
+
+    # [(obstacle_rate, floor_rate), ...]
+    obs_rates = []
+    floor_rates = []
+
+    for img, floor_mask, hose_mask in dataset:
+        # print(hose_mask.shape, hose_mask)
+        obstacle_mask = np.logical_not(floor_mask)
+        hist_obstacle_mask = segment_rgb_dist(img)
+        hist_floor_mask = np.logical_not(hist_obstacle_mask)
+
+        # show images
+        obstacle_img = cv2.cvtColor(obstacle_mask.astype(np.uint8) * 255, cv2.COLOR_GRAY2BGR)
+        hose_img = cv2.cvtColor(hose_mask, cv2.COLOR_GRAY2BGR)
+        # cv2.imshow("test", hose_img)
+        # cv2.waitKey(0)
+        hist_obstacle_img = cv2.cvtColor(hist_obstacle_mask.astype(np.uint8) * 255, cv2.COLOR_GRAY2BGR)
+        combined = np.vstack((np.hstack((img, hist_obstacle_img)),
+                              np.hstack((obstacle_img, hose_img))))
+        # cv2.imshow("combined", combined)
+        # cv2.waitKey(0)
+
+        # compute accuracy data
+        # obstacle_rate = np.count_nonzero(hist_obstacle_mask & obstacle_mask) / np.count_nonzero(obstacle_mask)
+        # hist_obstacle_mask = np.zeros(hist_obstacle_mask.shape).astype(bool)
+        # hist_floor_mask = np.logical_not(hist_obstacle_mask)
+        obstacle_rate = np.count_nonzero(hist_obstacle_mask & hose_mask) / np.count_nonzero(hose_mask)
+        floor_rate = np.count_nonzero(hist_floor_mask & floor_mask) / np.count_nonzero(floor_mask)
+        # accuracy_rates.append((obstacle_rate, floor_rate))
+        obs_rates.append(obstacle_rate)
+        floor_rates.append(floor_rate)
+        print(f"obs = {obstacle_rate:.3f}, floor = {floor_rate:.3f}")
+    
+    obs_rates = np.array(obs_rates)
+    floor_rates = np.array(floor_rates)
+    
+    print(f"avg obs rate: {np.mean(obs_rates)}")
+    print(f"avg floor rate: {np.mean(floor_rates)}")
+
+    f, axs = plt.subplots(1, 2, sharey=True)
+    plt.suptitle("Segmentation Accuracy of HSI Histogram Method")
+    axs[0].boxplot(obs_rates, vert=True)
+    axs[0].set_ylabel("% hose pixels correctly segmented")
+    axs[1].boxplot(floor_rates, vert=True)
+    axs[1].set_ylabel("% ground pixels correctly segmented")
+    plt.show()
+
 if __name__ == "__main__":
-    main()
+    print("HSI")
+    hsi_data_collection()
+    print("\n\n\nRGB")
+    rgb_dist_collection()
     # make_masks()
