@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
 from ref_histogram import segment_ref_hist_hsi
 
 
@@ -41,7 +42,8 @@ def main():
     dataset = get_dataset()
 
     # [(obstacle_rate, floor_rate), ...]
-    accuracy_rates = []
+    obs_rates = []
+    floor_rates = []
 
     for img, floor_mask, hose_mask in dataset:
         # print(hose_mask.shape, hose_mask)
@@ -57,8 +59,8 @@ def main():
         hist_obstacle_img = cv2.cvtColor(hist_obstacle_mask.astype(np.uint8) * 255, cv2.COLOR_GRAY2BGR)
         combined = np.vstack((np.hstack((img, hist_obstacle_img)),
                               np.hstack((obstacle_img, hose_img))))
-        cv2.imshow("combined", combined)
-        cv2.waitKey(0)
+        # cv2.imshow("combined", combined)
+        # cv2.waitKey(0)
 
         # compute accuracy data
         # obstacle_rate = np.count_nonzero(hist_obstacle_mask & obstacle_mask) / np.count_nonzero(obstacle_mask)
@@ -66,9 +68,21 @@ def main():
         # hist_floor_mask = np.logical_not(hist_obstacle_mask)
         obstacle_rate = np.count_nonzero(hist_obstacle_mask & hose_mask) / np.count_nonzero(hose_mask)
         floor_rate = np.count_nonzero(hist_floor_mask & floor_mask) / np.count_nonzero(floor_mask)
-        accuracy_rates.append((obstacle_rate, floor_rate))
+        # accuracy_rates.append((obstacle_rate, floor_rate))
+        obs_rates.append(obstacle_rate)
+        floor_rates.append(floor_rate)
         print(obstacle_rate, floor_rate)
     
+    obs_rates = np.array(obs_rates)
+    floor_rates = np.array(floor_rates)
+    floor_rates = np.array(floor_rates)
+
+    f, axs = plt.subplots(2, 1)
+    axs[0].boxplot(obs_rates, vert=False)
+    axs[0].set_xlabel("Hose Pixel Detection Rate")
+    axs[1].boxplot(floor_rates, vert=False)
+    axs[1].set_xlabel("Ground Pixel Detection Rate")
+    plt.show()
     
 if __name__ == "__main__":
     main()
