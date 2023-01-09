@@ -26,12 +26,12 @@ def predict():
 
     # split the dataset in train and test set
     indices = torch.randperm(len(dataset)).tolist()
-    dataset = torch.utils.data.Subset(dataset, indices[:-2])
-    dataset_test = torch.utils.data.Subset(dataset_test, indices[-2:])
+    dataset = torch.utils.data.Subset(dataset, indices[:-3])
+    dataset_test = torch.utils.data.Subset(dataset_test, indices)
 
     model = torch.load("example_model.pt")
     print("model loaded")
-    img, _ = dataset_test[0]
+    img, _ = dataset_test[3]
     model.eval()
     with torch.no_grad():
         prediction = model([img.to(device)])
